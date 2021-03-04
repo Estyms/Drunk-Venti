@@ -112,6 +112,20 @@ async function executeCommand(client, command, message, Config){
             break;
         }
 
+
+        case "help": {
+            message.reply(" Here are the commands !\
+            ```• !dv help : Displays available commands.\n\
+\n\
+• !dv setNewsChannel : Set current channel as the News Channel.\n\
+\n\
+• !dv addTwitterAccount [twitterAccount] : Add twitterAccount to track list.\n\
+\n\
+• !dv removeTwitterAccount [twitterAccount] : Remove twitter Account from track list.```\
+")
+            break;
+        }
+
         case "":{}
 
         default: console.log("Unknown command.")

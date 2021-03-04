@@ -45,6 +45,8 @@ async function start(){
 
 client.on('ready', () => {
 	console.log('bot ready');
+	client.user.setStatus("online");
+	client.user.setActivity("!dv help");
 	start();
 });
 
