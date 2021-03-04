@@ -39,7 +39,7 @@ async function postMessage(channel_id, message){
 }
 
 async function start(){
-	setInterval(checkTweets, 1000*5, Tweets);
+	setInterval(checkTweets, 1000*60*15, Tweets);
 }
 
 
