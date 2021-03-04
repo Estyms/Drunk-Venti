@@ -1,0 +1,21 @@
+{
+  "name": "drunk-venti",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Evann Regnault"
+  },
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "form-data": "^2.3.3",
+    "mongoose": "^5.11.18",
+    "node-fetch": "^2.6.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
