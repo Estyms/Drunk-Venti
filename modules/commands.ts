@@ -73,15 +73,15 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 
             Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
                 if (json["errors"]) {
-                    
+
                     return;
                 }
-                    
-                if ( (await Server.tweets(String(message.guildId))).find(m=>m["user_id"] == json["data"]["id"])){
+
+                if ((await Server.tweets(String(message.guildId))).find(m => m["user_id"] == json["data"]["id"])) {
                     message.reply("This account is already tracked !");
                     return;
                 }
-                
+
 
                 Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
                     if (res["errors"]) {
@@ -116,7 +116,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 
             Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
                 if (
-                    !(await Server.tweets(String(message.guildId))).find(c=>c["user_id"] === json["data"]["id"])
+                    !(await Server.tweets(String(message.guildId))).find(c => c["user_id"] === json["data"]["id"])
                 ) {
                     message.reply("This account isn't tracked !");
                     return;
@@ -128,7 +128,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
                     tweetId: String(json["data"]["id"]),
                 }).delete()
 
-                if (await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0 ){
+                if (await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0) {
                     Tweet.where("user_id", json["data"]["id"]).delete();
                 }
 
