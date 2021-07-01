@@ -53,7 +53,7 @@ function postMessage(channelId: string, message: string) {
 }
 
 function start() {
-	setInterval(checkTweets, 1000 * 15 /* 60*/);
+	setInterval(checkTweets, 1000 * 15 * 60);
 }
 
 
