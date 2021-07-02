@@ -1,8 +1,8 @@
+import './deps.ts'
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
 import { editBotStatus, startBot, sendMessage } from "./deps.ts";
 import { Commands } from "./modules/commands.ts";
-import './deps.ts'
 
 async function checkTweets() {
 	// Get every twitter accounts in the database
