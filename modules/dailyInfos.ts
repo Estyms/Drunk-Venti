@@ -74,7 +74,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 
 
     const message: Embed = {
-        title: "Objet farmable aujourd'hui",
+        title: "Objets farmables aujourd'hui",
         image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getDayName()}.png` }
     }
 
