@@ -1,4 +1,4 @@
-import { Database, MongoDBConnector, Model, DataTypes, Relationships } from "../deps.ts"
+import { Database, MongoDBConnector, Model, DataTypes, Relationships,  } from "../deps.ts"
 
 const connector = new MongoDBConnector({
     uri: 'mongodb://127.0.0.1:27017',
@@ -44,9 +44,13 @@ class Server extends Model {
         news_channel: {
             type: DataTypes.STRING,
         },
-        reminder_channel: {
+        daily_message_channel: {
             type: DataTypes.STRING,
         },
+        daily_message_id: {
+            type: DataTypes.STRING,
+        },
+
     }
 
     static async tweets(guildId: string) {

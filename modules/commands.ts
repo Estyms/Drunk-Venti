@@ -1,6 +1,7 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
-import { DiscordenoMessage } from "../deps.ts";
+import { createDailyEmbedMessages } from "./dailyInfos.ts"
+import { DiscordenoMessage, deleteMessage, sendMessage } from "../deps.ts";
 
 /**
  * @param { Client } client
@@ -40,7 +41,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
             break;
         }
 
-        case "setReminderChannel": {
+        case "setDailyMessage": {
             if (server["reminder_channel"] == String(message.channelId)) {
                 message.reply("This channel is already the Reminder Channel !");
                 break;
@@ -140,6 +141,24 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
             break;
         }
 
+        case "createDailyMessage": {
+            if (server["daily_message_id"]) {
+                deleteMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])))
+            }
+
+            const msg = await sendMessage(message.channelId, {
+                embeds: await createDailyEmbedMessages()
+            })
+
+
+            Server.where("guild_id", String(message.guildId)).update({
+                daily_message_channel: String(message.channelId),
+                daily_message_id: String(msg.id)
+            })
+
+            break;
+        }
+
         case "help": {
             message.reply(
                 " Here are the commands !\
@@ -149,7 +168,9 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 \n\
 • !dv addTwitterAccount [twitterAccount] : Add twitterAccount to track list.\n\
 \n\
-• !dv removeTwitterAccount [twitterAccount] : Remove twitter Account from track list.```\
+• !dv removeTwitterAccount [twitterAccount] : Remove twitter Account from track list.\n\
+\n\
+• !dv setDailyMessage : Creates the embed message for daily informations. ```\
 ",
             );
             break;

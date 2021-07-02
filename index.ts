@@ -1,8 +1,9 @@
 import './deps.ts'
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
-import { editBotStatus, startBot, sendMessage } from "./deps.ts";
+import { editBotStatus, startBot, sendMessage, cron } from "./deps.ts";
 import { Commands } from "./modules/commands.ts";
+import { updateDailyInfos } from "./modules/dailyInfos.ts"
 
 async function checkTweets() {
 	// Get every twitter accounts in the database
@@ -53,7 +54,13 @@ function postMessage(channelId: string, message: string) {
 }
 
 function start() {
-	setInterval(checkTweets, 1000 * 15 * 60);
+	// Tweets
+	checkTweets();
+	cron(" 0 0/15 * 1/1 * ? * ", checkTweets);
+
+	// Embed Messages Infos
+	updateDailyInfos();
+	cron("0 0 4 1/1 * ? *", checkTweets);
 }
 
 
