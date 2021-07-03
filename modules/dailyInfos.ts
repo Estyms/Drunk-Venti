@@ -20,7 +20,9 @@ interface FarmableItem extends Item {
 
 
 function getDayName() {
-    switch (new Date().getDay()) {
+    const d = new Date();
+    d.setHours(d.getHours()-4);
+    switch (d.getDay()) {
         case 0: return "sunday";
         case 1: return "monday";
         case 2: return "thursday";
