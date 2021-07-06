@@ -25,9 +25,9 @@ function getDayName() {
     switch (d.getDay()) {
         case 0: return "sunday";
         case 1: return "monday";
-        case 2: return "thursday";
+        case 2: return "tuesday";
         case 3: return "wednesday";
-        case 4: return "tuesday";
+        case 4: return "thursday";
         case 5: return "wednesday";
         case 6: return "saturday";
         default:
