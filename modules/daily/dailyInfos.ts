@@ -5,17 +5,17 @@ import { createEmbedEvents } from "./dailyEvents.ts"
 
 async function createDailyEmbedMessages(): Promise<Embed[]> {
 
-    const messages: Embed[] = [] as Embed[];
 
+    const messages = await createEmbedEvents();
 
     const message: Embed = {
         title: "Objets farmables aujourd'hui",
         image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getDayName()}.png` }
     }
 
-    messages.push(message)
+    messages.push(message);
 
-    return messages.concat(await createEmbedEvents())
+    return messages;
 
 }
 
