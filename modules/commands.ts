@@ -1,6 +1,6 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
-import { createDailyEmbedMessages } from "./dailyInfos.ts"
+import { createDailyEmbedMessages } from "./daily/dailyInfos.ts"
 import { DiscordenoMessage, deleteMessage, sendMessage } from "../deps.ts";
 
 /**

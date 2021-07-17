@@ -3,7 +3,7 @@ import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
 import { editBotStatus, startBot, sendMessage, cron } from "./deps.ts";
 import { Commands } from "./modules/commands.ts";
-import { updateDailyInfos } from "./modules/dailyInfos.ts"
+import { updateDailyInfos } from "./modules/daily/dailyInfos.ts"
 
 async function checkTweets() {
 	// Get every twitter accounts in the database
