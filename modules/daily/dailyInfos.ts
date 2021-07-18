@@ -8,7 +8,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 
     const messages = await createEmbedEvents();
 
-    const message: Embed = new Date().getDay() != 6 ? {
+    const message: Embed = new Date().getDay() != 0 ? {
         title: "Objets farmables aujourd'hui",
         image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getDayName()}.png` }
     } : {
