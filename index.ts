@@ -56,11 +56,11 @@ function postMessage(channelId: string, message: string) {
 function start() {
 	// Tweets
 	checkTweets();
-	cron("15,30,45,0 * * * *", ()=>{checkTweets()});
+	cron("0/15 * * * *", ()=>{checkTweets()});
 
 	// Embed Messages Infos
 	updateDailyInfos();
-	cron("0 4 * * *", ()=>{updateDailyInfos()});
+	cron("15/15 4 * * *", ()=>{updateDailyInfos()});
 }
 
 
