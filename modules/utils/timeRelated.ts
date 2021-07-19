@@ -1,4 +1,4 @@
-function getDayName() {
+function getGenshinDayName() {
     const d = new Date();
     d.setHours(d.getHours() - 4);
     switch (d.getDay()) {
@@ -26,11 +26,11 @@ function dayDifference(date1 : Date, date2 : Date) : number {
 function remainingDays(endDate : Date){
     const oneDay = 24 * 60 * 60 * 1000;
     const today = new Date();
-    today.setHours(today.getHours()-4)
+    today.setHours(today.getHours())
 
 
     return Math.round(Math.abs((today.valueOf() - endDate.valueOf()) / oneDay));
 }
 
 
-export { getDayName, parseTime, dayDifference, remainingDays}
+export { getGenshinDayName, parseTime, dayDifference, remainingDays}
