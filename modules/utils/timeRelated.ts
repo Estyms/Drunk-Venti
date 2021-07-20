@@ -49,9 +49,9 @@ function remainingTime(endDate : Date) : timeInfo{
     const time = timeDifference(endDate, today);
 
     return {
-        remainingDays: time/oneDay,
-        remainingHours: (time % oneDay) / oneHour,
-        remainingMinutes: ((time % oneDay) % oneHour) / oneMinute
+        remainingDays: Math.round(time/oneDay),
+        remainingHours: Math.round((time % oneDay) / oneHour),
+        remainingMinutes: Math.round(((time % oneDay) % oneHour) / oneMinute)
     }
 }
 
