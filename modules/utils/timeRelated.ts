@@ -26,8 +26,8 @@ function parseTime(time: string): Date {
 }
 
 function timeDifference(date1 : Date, date2 : Date) : number {
-    const oneDay = 24 * 60 * 60 * 1000;
-    return Math.round(Math.abs((date1.valueOf() - date2.valueOf()) / oneDay));
+    console.log(Math.round(Math.abs((date1.valueOf() - date2.valueOf()))))
+    return Math.round(Math.abs((date1.valueOf() - date2.valueOf())));
 }
 
 
@@ -44,14 +44,15 @@ function remainingTime(endDate : Date) : timeInfo{
     const oneDay = 24 * oneHour;
 
     const today = new Date();
-    today.setHours(today.getHours());
 
     const time = timeDifference(endDate, today);
+
+    console.log(Math.round(time/oneDay), Math.round((time % oneDay) / oneHour), Math.round((time % oneHour) / oneMinute) )
 
     return {
         remainingDays: Math.round(time/oneDay),
         remainingHours: Math.round((time % oneDay) / oneHour),
-        remainingMinutes: Math.round(((time % oneDay) % oneHour) / oneMinute)
+        remainingMinutes: Math.round((time % oneHour) / oneMinute)
     }
 }
 
