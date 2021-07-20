@@ -1,4 +1,4 @@
-import { parseTime, remainingDays } from "../utils/timeRelated.ts"
+import { parseTime, remainingTime, stringifyRemainingTime } from "../utils/timeRelated.ts"
 import { Embed, EmbedField } from "../../deps.ts"
 
 interface eventData {
@@ -66,11 +66,13 @@ async function createEmbedEvents(){
     const EmbedMessages : Embed[] = [];
     EventData.currents.forEach(event => {
         event.url &&
+        stringifyRemainingTime(remainingTime(parseTime(event.end))) != ""
+        &&
         EmbedMessages.push({
             title: event.name,
             url: event.url || undefined,
             image: event.image && event.url ? {url:`https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${event.image}`} : undefined,
-            description: `${remainingDays(parseTime(event.end))} jour(s) restant`
+            description: stringifyRemainingTime(remainingTime(parseTime(event.end)))
         })
     });
 
@@ -78,9 +80,11 @@ async function createEmbedEvents(){
 
     EventData.currents.forEach(event => {
         !event.url &&
+        stringifyRemainingTime(remainingTime(parseTime(event.end)))
+        &&
         EmbedFields.push({
             name: event.name,
-            value: `${remainingDays(parseTime(event.end))} jour(s) restant`
+            value: stringifyRemainingTime(remainingTime(parseTime(event.end)))
         })
     })
 
@@ -94,7 +98,7 @@ async function createEmbedEvents(){
             title: "BIENTOT : " + EventData.upcomming.name,
             url: EventData.upcomming.url || undefined,
             image: EventData.upcomming.image ? {url:`https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${EventData.upcomming.image}`} : undefined,
-            description: `Dans ${remainingDays(parseTime(EventData.upcomming.start))} jour(s)`
+            description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start)), true)
     })
 
     return EmbedMessages;

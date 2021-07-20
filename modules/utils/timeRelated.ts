@@ -1,3 +1,10 @@
+interface timeInfo {
+    remainingDays: number,
+    remainingHours: number,
+    remainingMinutes: number
+}
+
+
 function getGenshinDayName() {
     const d = new Date();
     d.setHours(d.getHours() - 4);
@@ -18,19 +25,35 @@ function parseTime(time: string): Date {
     return new Date(time)
 }
 
-function dayDifference(date1 : Date, date2 : Date) : number {
+function timeDifference(date1 : Date, date2 : Date) : number {
     const oneDay = 24 * 60 * 60 * 1000;
     return Math.round(Math.abs((date1.valueOf() - date2.valueOf()) / oneDay));
 }
 
-function remainingDays(endDate : Date){
-    const oneDay = 24 * 60 * 60 * 1000;
+
+function stringifyRemainingTime(remaining : timeInfo, upcomming = false) : string {
+    if (remaining.remainingDays) return upcomming ? `Dans ${remaining.remainingDays} jour(s)` : `${remaining.remainingDays} jour(s) restant(s)`;
+    if (remaining.remainingHours) return upcomming ? `Dans ${remaining.remainingHours} heure(s)` : `${remaining.remainingHours} heure(s) restante(s)`;
+    if (remaining.remainingMinutes) return upcomming ? `Dans ${remaining.remainingMinutes} minute(s)` : `${remaining.remainingMinutes} minute(s) restante(s)`;
+    return "";
+}
+
+function remainingTime(endDate : Date) : timeInfo{
+    const oneMinute = 60 * 1000;
+    const oneHour = 60 * oneMinute;
+    const oneDay = 24 * oneHour;
+
     const today = new Date();
-    today.setHours(today.getHours())
+    today.setHours(today.getHours());
 
+    const time = timeDifference(endDate, today);
 
-    return Math.round(Math.abs((today.valueOf() - endDate.valueOf()) / oneDay));
+    return {
+        remainingDays: time/oneDay,
+        remainingHours: (time % oneDay) / oneHour,
+        remainingMinutes: ((time % oneDay) % oneHour) / oneMinute
+    }
 }
 
 
-export { getGenshinDayName, parseTime, dayDifference, remainingDays}
+export { getGenshinDayName, parseTime, timeDifference, remainingTime, stringifyRemainingTime}
