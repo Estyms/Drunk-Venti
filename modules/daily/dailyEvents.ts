@@ -133,7 +133,7 @@ async function createEmbedEvents(){
  */
 function getDateOfNextUpdate() {
     // Date of the 1.5 Update for reference
-    const referenceUpdate = new Date(2021, 3, 28, 4, 0, 0, 0);
+    const referenceUpdate = new Date(2021, 3, 28, 6, 0, 0, 0);
 
     // Gets today date
     const today = new Date();
