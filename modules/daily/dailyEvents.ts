@@ -147,7 +147,7 @@ function getDateOfNextUpdate() {
     // Creates the date of the next Update
     const newDate = new Date(today)
     newDate.setDate(newDate.getDate() + remainingDays);
-    newDate.setHours(4)
+    newDate.setHours(6)
     newDate.setMinutes(0)
     newDate.setSeconds(0)
     newDate.setMilliseconds(0)
