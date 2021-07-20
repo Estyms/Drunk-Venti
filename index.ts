@@ -4,6 +4,7 @@ import { Tweet } from "./modules/mongodb.ts";
 import { editBotStatus, startBot, sendMessage, cron } from "./deps.ts";
 import { Commands } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts"
+import { dailyEvents } from "./modules/daily/dailyEvents.ts"
 
 
 /**
@@ -70,9 +71,15 @@ function start() {
 	checkTweets();
 	cron("0/15 * * * *", ()=>{checkTweets()});
 
+	// Tweets
+	dailyEvents.getEventsData();
+	cron("0 0/1 * * *", ()=> {
+		dailyEvents.getEventsData();
+	})
+
 	// Embed Messages Infos
 	updateDailyInfos();
-	cron("0 0/1 * * *", ()=>{updateDailyInfos()});
+	cron("* * * * *", ()=>{updateDailyInfos()});
 }
 
 

@@ -1,14 +1,14 @@
 import { Server } from "../mongodb.ts"
 import { Embed, editMessage } from "../../deps.ts"
 import { getGenshinDayName } from "../utils/timeRelated.ts"
-import { createEmbedEvents } from "./dailyEvents.ts"
+import { dailyEvents } from "./dailyEvents.ts"
 
 
 /**
  * Creates the Embed messages for the Daily Message
  */
 async function createDailyEmbedMessages(): Promise<Embed[]> {
-    const messages = await createEmbedEvents();
+    const messages = await dailyEvents.createEmbedEvents();
 
     const message: Embed = new Date().getDay() != 0 ? {
         title: "Objets farmables aujourd'hui",
