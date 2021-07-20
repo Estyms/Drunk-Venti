@@ -22,6 +22,10 @@ class Tweet extends Model {
         }
     }
 
+    /**
+     * Gets the servers that needs the tweets of a certain user
+     *  @param userId ID of a twitter user 
+     */
     static async servers(userId: string) {
         const a = await ServerTweet.where({ tweetId: userId }).all();
         const res = [];
@@ -53,6 +57,10 @@ class Server extends Model {
 
     }
 
+    /**
+     * Gets the twitter users that a specific server needs
+     * @param guildId ID of a Discord server
+     */
     static async tweets(guildId: string) {
         const a = await ServerTweet.where({ serverId: guildId }).all();
         const res = [];
@@ -63,10 +71,13 @@ class Server extends Model {
     }
 }
 
+// Sets a relationship Between the servers and the tweets
 const ServerTweet = Relationships.manyToMany(Server, Tweet);
 
+// Links the database with the differents types
 mongodb.link([ServerTweet, Server, Tweet]);
 
+// Synchronizes the database
 mongodb.sync();
 
 export { Server, Tweet, ServerTweet };

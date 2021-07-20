@@ -3,9 +3,11 @@ import { Embed, editMessage } from "../../deps.ts"
 import { getGenshinDayName } from "../utils/timeRelated.ts"
 import { createEmbedEvents } from "./dailyEvents.ts"
 
+
+/**
+ * Creates the Embed messages for the Daily Message
+ */
 async function createDailyEmbedMessages(): Promise<Embed[]> {
-
-
     const messages = await createEmbedEvents();
 
     const message: Embed = new Date().getDay() != 0 ? {
@@ -23,6 +25,9 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 }
 
 
+/**
+ * Updates the daily info messages from all servers
+ */
 async function updateDailyInfos() {
     // We get all the daily messages to update from all server
     const dailyMessageIdList = await Server.select("daily_message_id", "daily_message_channel").all();

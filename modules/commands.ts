@@ -4,10 +4,9 @@ import { createDailyEmbedMessages } from "./daily/dailyInfos.ts"
 import { DiscordenoMessage, deleteMessage, sendMessage } from "../deps.ts";
 
 /**
- * @param { Client } client
- * @param { String } command
- * @param { Config } Config
- * @param { Message } message
+ * Executes a command
+ * @param command The command that is executed
+ * @param message The message that contains the command
  */
 async function executeCommand(command: string, message: DiscordenoMessage) {
     const serverTest = await Server.where("guild_id", String(message.guildId))
@@ -23,15 +22,10 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
         .first();
 
     switch (command) {
+        // Sets the News Channel
         case "setNewsChannel": {
-            if (server["news_channel"] == String(message.channelId)) {
-                message.reply("This channel is already the News Channel !");
-                break;
-            }
             if (server["reminder_channel"] == String(message.channelId)) {
-                message.reply(
-                    "This channel is already the Reminder Channel, choose another Text Channel !",
-                );
+                message.reply("This channel is already the News Channel !");
                 break;
             }
             Server.where("guild_id", String(message.guildId)).update({
@@ -41,24 +35,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
             break;
         }
 
-        case "setDailyMessage": {
-            if (server["reminder_channel"] == String(message.channelId)) {
-                message.reply("This channel is already the Reminder Channel !");
-                break;
-            }
-            if (server["news_channel"] == String(message.channelId)) {
-                message.reply(
-                    "This channel is already the News Channel, choose another Text Channel !",
-                );
-                break;
-            }
-            Server.where("guild_id", String(message.guildId)).update({
-                reminder_channel: String(message.channelId),
-            });
-            message.reply("This channel is now set as the Reminder Channel !");
-            break;
-        }
-
+        // Adds a twitter account from the news of the server
         case "addTwitterAccount": {
             if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
                 message.reply("This is not a twitter username.");
@@ -109,6 +86,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
             break;
         }
 
+        // Remove a twitter account from the news of the server
         case "removeTwitterAccount": {
             if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
                 message.reply("This is not a twitter username.");
@@ -141,7 +119,15 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
             break;
         }
 
+
+        // Creates the Daily Message
         case "createDailyMessage": {
+
+            if (server["reminder_channel"] == String(message.channelId)) {
+                message.reply("You can't set the daily message in the News channel !")
+                break;
+            }
+
             if (server["daily_message_id"]) {
                 deleteMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])))
             }
@@ -170,7 +156,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 \n\
 • !dv removeTwitterAccount [twitterAccount] : Remove twitter Account from track list.\n\
 \n\
-• !dv setDailyMessage : Creates the embed message for daily informations. ```\
+• !dv createDailyMessage : Creates the embed message for daily informations. ```\
 ",
             );
             break;

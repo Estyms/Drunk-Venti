@@ -2,6 +2,10 @@ interface ParsedJSObject {
     [index: string]: Record<string, unknown>
 }
 
+/**
+ * Converts a JS Object string to a JSON String
+ * @param content JS Object string we want to convert  
+ */
 function convertJsObjectString(content: string) {
     const regex0 = /export const [a-z-A-Z_0-9]* =/gm;
     const regex1 = /([_a-zA-Z0-9]+):/gm;
@@ -12,12 +16,20 @@ function convertJsObjectString(content: string) {
 
 }
 
+
+/**
+ * Converts a JS Object string to a JSON Object
+ * @param content JS Object string we want to convert to a JSON Object
+ */
 function jsObjectToJson(content: string): ParsedJSObject {
     const objectString = convertJsObjectString(content);
     return JSON.parse(objectString) as ParsedJSObject;
 }
 
-
+/**
+ * Converts a file containing a JS Object file to a JSON Object
+ * @param link Link to the file that contains the JS Object 
+ */
 async function jsObjectFileToJson(link: string): Promise<ParsedJSObject> {
     const response = await fetch(link);
     return jsObjectToJson(await response.text());

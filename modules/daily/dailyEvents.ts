@@ -19,7 +19,9 @@ interface eventItem {
 
 type eventItems = [[eventItem]]
 
-
+/**
+ *  Gets all the events of the game 
+ */
 async function getAllEvents(): Promise<eventItems> {
     // deno-lint-ignore prefer-const
     let allEvents: eventItems | undefined;
@@ -28,6 +30,10 @@ async function getAllEvents(): Promise<eventItems> {
     return allEvents;
 }
 
+/**
+ * Gets all the current event from a list of events
+ * @param allEvents List of all the events we want to check
+ */
 function getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     const date = new Date();
 
@@ -37,6 +43,11 @@ function getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     return CurrentEvents
 }
 
+
+/**
+ * Gets the nearest upcomming Event from a list of event
+ * @param allEvents List of all the events we want to check
+ */
 function getUpcommingEvent(allEvents: eventItem[]): eventItem {
     const date = new Date();
 
@@ -47,6 +58,10 @@ function getUpcommingEvent(allEvents: eventItem[]): eventItem {
     return UpcommingEvent;
 }
 
+
+/**
+ * Gets all the data needed Event wise
+ */
 async function getEventsData(): Promise<eventData> {
     const allEvents = await (await getAllEvents()).flat(2)
     const currentEvents = getCurrentEventsData(allEvents);
@@ -55,9 +70,15 @@ async function getEventsData(): Promise<eventData> {
     return { currents: currentEvents, upcomming: upcommingEvent }
 }
 
+
+/**
+ * Creates the Embed messages for all the events
+ */
 async function createEmbedEvents(){
     const EventData = await getEventsData();
     const EmbedMessages : Embed[] = [];
+
+    // Current Major Events
     EventData.currents.forEach(event => {
         event.url &&
         stringifyRemainingTime(remainingTime(parseTime(event.end))) != ""
@@ -72,6 +93,7 @@ async function createEmbedEvents(){
 
     const EmbedFields : EmbedField[] = []
 
+    // Current Minor Events
     EventData.currents.forEach(event => {
         !event.url &&
         stringifyRemainingTime(remainingTime(parseTime(event.end)))
@@ -88,9 +110,8 @@ async function createEmbedEvents(){
     })
     
 
-
+    // Upcomming Event 
     const nextUpdate = getDateOfNextUpdate();
-
     EmbedMessages.push(parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf() ? {
             title: "BIENTÔT : " + EventData.upcomming.name,
             url: EventData.upcomming.url || undefined,
@@ -104,17 +125,26 @@ async function createEmbedEvents(){
     return EmbedMessages;
 }
 
+
+
+
+/**
+ * Gets the date of the next Update
+ */
 function getDateOfNextUpdate() {
-    const randomUpdate = new Date(2021, 3, 28, 4, 0, 0, 0);
+    // Date of the 1.5 Update for reference
+    const referenceUpdate = new Date(2021, 3, 28, 4, 0, 0, 0);
 
+    // Gets today date
     const today = new Date();
-    today.setHours(today.getHours());
     
-    const remaining = remainingTime(today, randomUpdate)
+    // Gets the time between today and the reference Update
+    const remaining = remainingTime(today, referenceUpdate)
 
-
+    // Calculate the days remaining to the upcomming update
     const remainingDays = 42 - remaining.remainingDays % 42;
 
+    // Creates the date of the next Update
     const newDate = new Date(today)
     newDate.setDate(newDate.getDate() + remainingDays);
     newDate.setHours(4)

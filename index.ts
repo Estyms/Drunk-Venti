@@ -5,8 +5,12 @@ import { editBotStatus, startBot, sendMessage, cron } from "./deps.ts";
 import { Commands } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts"
 
+
+/**
+ * Checks if there is tweets to send, and if so, send them
+ */
 async function checkTweets() {
-	// Get every twitter accounts in the database
+	// Gets every twitter accounts in the database
 	const Tweets: Tweet[] = await Tweet.all();
 
 	// Itterate over every tweets
@@ -14,7 +18,7 @@ async function checkTweets() {
 		// If an error has occured, skip
 		if (tweet["errors"]) return;
 
-		// Get updated tweet
+		// Gets updated tweet
 		Twitter.getUserTweets(String(tweet["user_id"])).then((json) => {
 
 			// If an error has occured skip
@@ -32,7 +36,7 @@ async function checkTweets() {
 			});
 
 
-			// Get all servers that uses this tweet
+			// Gets all servers that uses this tweet
 			Tweet.servers(json["data"]["id"]).then((serverList) => {
 				// Itterate over all servers
 				serverList.forEach(server => {
@@ -49,10 +53,18 @@ async function checkTweets() {
 	});
 }
 
+/**
+ * Easy wrapper to send a message in a channel
+ * @param channelId Channel where you want to send the message
+ * @param message Message you wanna send
+ */
 function postMessage(channelId: string, message: string) {
 	sendMessage(BigInt(channelId), message);
 }
 
+/**
+ * Start function for the bot 
+ */
 function start() {
 	// Tweets
 	checkTweets();
@@ -69,6 +81,7 @@ startBot({
 	intents: ["Guilds", "GuildMessages", "GuildEmojis"],
 
 	eventHandlers: {
+		// What happens when connected to discord
 		ready() {
 			console.log("Bot Ready");
 			editBotStatus({
@@ -81,6 +94,8 @@ startBot({
 			});
 			start();
 		},
+
+		// When a message is created
 		messageCreate(message) {
 			if (message.content.startsWith("!dv")) {
 				const args = message.content.split(" ");
