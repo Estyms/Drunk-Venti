@@ -1,5 +1,5 @@
 import { jsObjectFileToJson } from "../utils/jsObjectParser.ts"
-import { getDayName } from "../utils/timeRelated.ts"
+import { getGenshinDayName } from "../utils/timeRelated.ts"
 
 interface ItemDict {
     [index: string]: Item
@@ -31,7 +31,7 @@ async function getDailyFarmableItems(): Promise<FarmableItem[]> {
     const itemList = await getItems();
     const farmableItemKeys: string[] = Object.keys(itemList).filter((key: string) => itemList[key].day);
     const farmableItems: FarmableItem[] = farmableItemKeys.map(key => itemList[key]) as FarmableItem[];
-    const dailyFarmableItems: FarmableItem[] = farmableItems.filter(x => x.day.includes(getDayName()))
+    const dailyFarmableItems: FarmableItem[] = farmableItems.filter(x => x.day.includes(getGenshinDayName()))
     return dailyFarmableItems;
 }
 

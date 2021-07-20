@@ -26,8 +26,7 @@ function parseTime(time: string): Date {
 }
 
 function timeDifference(date1 : Date, date2 : Date) : number {
-    console.log(Math.round(Math.abs((date1.valueOf() - date2.valueOf()))))
-    return Math.round(Math.abs((date1.valueOf() - date2.valueOf())));
+    return Math.floor(Math.abs((date1.valueOf() - date2.valueOf())));
 }
 
 
@@ -38,23 +37,23 @@ function stringifyRemainingTime(remaining : timeInfo, upcomming = false) : strin
     return "";
 }
 
-function remainingTime(endDate : Date) : timeInfo{
+function remainingTime(endDate : Date, startDate? :Date) : timeInfo{
     const oneMinute = 60 * 1000;
     const oneHour = 60 * oneMinute;
     const oneDay = 24 * oneHour;
 
     const today = new Date();
 
-    const time = timeDifference(endDate, today);
-
-    console.log(Math.round(time/oneDay), Math.round((time % oneDay) / oneHour), Math.round((time % oneHour) / oneMinute) )
+    const time = timeDifference(endDate, startDate || today);
 
     return {
-        remainingDays: Math.round(time/oneDay),
-        remainingHours: Math.round((time % oneDay) / oneHour),
-        remainingMinutes: Math.round((time % oneHour) / oneMinute)
+        remainingDays: Math.floor(time/oneDay),
+        remainingHours: Math.floor((time % oneDay) / oneHour),
+        remainingMinutes: Math.floor((time % oneHour) / oneMinute)
     }
 }
+
+
 
 
 export { getGenshinDayName, parseTime, timeDifference, remainingTime, stringifyRemainingTime}
