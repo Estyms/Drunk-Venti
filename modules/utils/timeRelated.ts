@@ -49,7 +49,7 @@ function timeDifference(date1 : Date, date2 : Date) : number {
  */
 function stringifyRemainingTime(remaining : timeInfo, upcomming = false) : string {
     if (remaining.remainingDays) return upcomming ? `Dans ${remaining.remainingDays} jour(s)` : `${remaining.remainingDays} jour(s) restant(s)`;
-    if (remaining.remainingHours) return upcomming ? `Dans ${remaining.remainingHours} heure(s)` : `${remaining.remainingHours} heure(s) restante(s)`;
+    if (remaining.remainingHours) return upcomming ? `Dans ${remaining.remainingHours+(remaining.remainingMinutes> 30 ? 1 : 0)} heure(s)` : `${remaining.remainingHours+(remaining.remainingMinutes> 30 ? 1 : 0)} heure(s) restante(s)`;
     if (remaining.remainingMinutes) return upcomming ? `Dans ${remaining.remainingMinutes} minute(s)` : `${remaining.remainingMinutes} minute(s) restante(s)`;
     return "";
 }
