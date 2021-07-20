@@ -60,7 +60,7 @@ function start() {
 
 	// Embed Messages Infos
 	updateDailyInfos();
-	cron("15/15 4 * * *", ()=>{updateDailyInfos()});
+	cron("0 0/1 * * *", ()=>{updateDailyInfos()});
 }
 
 
