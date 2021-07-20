@@ -30,7 +30,6 @@ async function getAllEvents(): Promise<eventItems> {
 
 function getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     const date = new Date();
-    date.setHours(date.getHours() - 4)
 
     const CurrentEvents = allEvents.filter(event => date > parseTime(event.start) && date < parseTime(event.end))
     CurrentEvents.sort((a, b) => parseTime(a.end).valueOf() - parseTime(b.end).valueOf());
@@ -40,7 +39,6 @@ function getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
 
 function getUpcommingEvent(allEvents: eventItem[]): eventItem {
     const date = new Date();
-    date.setHours(date.getHours() - 4)
 
     const UpcommingEvents = allEvents.filter(event => date < parseTime(event.start))
     UpcommingEvents.sort((a, b) => parseTime(a.end).valueOf() - parseTime(b.end).valueOf());
@@ -58,10 +56,6 @@ async function getEventsData(): Promise<eventData> {
 }
 
 async function createEmbedEvents(){
-    const date = new Date();
-    date.setHours(date.getHours() - 4)
-
-
     const EventData = await getEventsData();
     const EmbedMessages : Embed[] = [];
     EventData.currents.forEach(event => {
@@ -94,14 +88,42 @@ async function createEmbedEvents(){
     })
     
 
-    EmbedMessages.push({
-            title: "BIENTOT : " + EventData.upcomming.name,
+
+    const nextUpdate = getDateOfNextUpdate();
+
+    EmbedMessages.push(parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf() ? {
+            title: "BIENTÔT : " + EventData.upcomming.name,
             url: EventData.upcomming.url || undefined,
             image: EventData.upcomming.image ? {url:`https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${EventData.upcomming.image}`} : undefined,
             description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start)), true)
+    }: {
+        title: "BIENTÔT : Nouvelle Mise à jour",
+        description: stringifyRemainingTime(remainingTime(nextUpdate), true)
     })
 
     return EmbedMessages;
 }
+
+function getDateOfNextUpdate() {
+    const randomUpdate = new Date(2021, 3, 28, 4, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(today.getHours());
+    
+    const remaining = remainingTime(today, randomUpdate)
+
+
+    const remainingDays = 42 - remaining.remainingDays % 42;
+
+    const newDate = new Date(today)
+    newDate.setDate(newDate.getDate() + remainingDays);
+    newDate.setHours(4)
+    newDate.setMinutes(0)
+    newDate.setSeconds(0)
+    newDate.setMilliseconds(0)
+
+    return newDate
+}
+
 
 export { getEventsData, createEmbedEvents }

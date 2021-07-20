@@ -1,6 +1,6 @@
 import { Server } from "../mongodb.ts"
 import { Embed, editMessage } from "../../deps.ts"
-import { getDayName } from "../utils/timeRelated.ts"
+import { getGenshinDayName } from "../utils/timeRelated.ts"
 import { createEmbedEvents } from "./dailyEvents.ts"
 
 async function createDailyEmbedMessages(): Promise<Embed[]> {
@@ -10,7 +10,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 
     const message: Embed = new Date().getDay() != 0 ? {
         title: "Objets farmables aujourd'hui",
-        image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getDayName()}.png` }
+        image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName()}.png` }
     } : {
         title: "Objets farmables aujourd'hui",
         description: "On est dimanche, donc tout"
@@ -21,6 +21,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
     return messages;
 
 }
+
 
 async function updateDailyInfos() {
     // We get all the daily messages to update from all server
