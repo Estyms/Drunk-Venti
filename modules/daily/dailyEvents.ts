@@ -15,6 +15,7 @@ interface eventItem {
     zoom: string,
     url: string,
     showOnHome: boolean
+    timezoneDependant: boolean
 }
 
 type eventItems = [[eventItem]]
@@ -48,8 +49,8 @@ async getAllEvents(): Promise<eventItems> {
 getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     const date = new Date();
 
-    const CurrentEvents = allEvents.filter(event => date > parseTime(event.start) && date < parseTime(event.end))
-    CurrentEvents.sort((a, b) => parseTime(a.end).valueOf() - parseTime(b.end).valueOf());
+    const CurrentEvents = allEvents.filter(event => date > parseTime(event.start  + (event.timezoneDependant ? " UTC+8" : " ")) && date < parseTime(event.end))
+    CurrentEvents.sort((a, b) => parseTime(a.end  + (a.timezoneDependant ? " UTC+8" : " ")).valueOf() - parseTime(b.end  + (a.timezoneDependant ? " UTC+8" : " ")).valueOf());
     CurrentEvents.sort((a, b) => (a.url ? 0 : 1) - (b.url ? 0 : 1))
     return CurrentEvents
 }
@@ -62,8 +63,8 @@ getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
 getUpcommingEvent(allEvents: eventItem[]): eventItem {
     const date = new Date();
 
-    const UpcommingEvents = allEvents.filter(event => date < parseTime(event.start))
-    UpcommingEvents.sort((a, b) => parseTime(a.end).valueOf() - parseTime(b.end).valueOf());
+    let UpcommingEvents = allEvents.filter(event => date < parseTime(event.start))
+    UpcommingEvents = UpcommingEvents.sort((a, b) =>  parseTime(a.start + (a.timezoneDependant ? " UTC+8" : " ")).valueOf() - parseTime(b.start + (a.timezoneDependant ? " UTC+8" : " ")).valueOf());
 
     const UpcommingEvent = UpcommingEvents[0]
     return UpcommingEvent;
@@ -74,9 +75,21 @@ getUpcommingEvent(allEvents: eventItem[]): eventItem {
  * Gets all the data needed Event wise
  */
 async getEventsData(): Promise<void> {
-    const allEvents = await (await this.getAllEvents()).flat(2)
+    let allEvents = await (await this.getAllEvents()).flat(2)
+    allEvents = allEvents.map(x=> {
+        x.start = x.start.replace("-","/");
+        if (x.timezoneDependant){
+            x.start += " UTC+8"
+        }
+        return x
+    })
+    
     const currentEvents = this.getCurrentEventsData(allEvents);
+    
     const upcommingEvent = this.getUpcommingEvent(allEvents)
+
+    console.log(allEvents);
+    
 
     this.AllEvents =  { currents: currentEvents, upcomming: upcommingEvent }
 }
@@ -128,7 +141,7 @@ async createEmbedEvents() {
         title: "BIENTÔT : " + EventData.upcomming.name,
         url: EventData.upcomming.url || undefined,
         image: EventData.upcomming.image ? { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${EventData.upcomming.image}` } : undefined,
-        description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start)), true)
+        description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start  + (EventData.upcomming.timezoneDependant ? " UTC+8" : " "))), true)
     } : {
         title: "BIENTÔT : Nouvelle Mise à jour",
         description: stringifyRemainingTime(remainingTime(nextUpdate), true)

@@ -37,10 +37,12 @@ async function updateDailyInfos() {
 
     // We remove all the servers that do not have a daily message set
     dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((server => {
+        try {
         editMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])), {
             content: "",
             embeds: messages
-        });
+            });
+        } catch { console.log(`Error when editing message`)}
     }))
 }
 
