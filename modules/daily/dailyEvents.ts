@@ -87,10 +87,7 @@ async getEventsData(): Promise<void> {
     const currentEvents = this.getCurrentEventsData(allEvents);
     
     const upcommingEvent = this.getUpcommingEvent(allEvents)
-
-    console.log(allEvents);
     
-
     this.AllEvents =  { currents: currentEvents, upcomming: upcommingEvent }
 }
 
