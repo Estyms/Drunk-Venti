@@ -26,7 +26,7 @@ class Tweet extends Model {
      * Gets the servers that needs the tweets of a certain user
      *  @param userId ID of a twitter user 
      */
-    static async servers(userId: string) {
+    static async servers(userId: string) : Promise<Server[]> {
         const a = await ServerTweet.where({ tweetId: userId }).all();
         const res = [];
         for await (const b of a) {
@@ -61,7 +61,7 @@ class Server extends Model {
      * Gets the twitter users that a specific server needs
      * @param guildId ID of a Discord server
      */
-    static async tweets(guildId: string) {
+    static async tweets(guildId: string) : Promise<Tweet[]> {
         const a = await ServerTweet.where({ serverId: guildId }).all();
         const res = [];
         for await (const b of a) {
