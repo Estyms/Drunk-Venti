@@ -35,18 +35,19 @@ async function updateDailyInfos() {
     // We create the embed messages
     const messages = await createDailyEmbedMessages();
 
-    resume(0);
-
+    
     // We remove all the servers that do not have a daily message set
-    dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((server => {
-        try {
+    try {
+        dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((server => {
+        
         
         editMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])), {
             content: "",
             embeds: messages
             });
-        } catch { console.log(`Error when editing message`)}
-    }))
+        
+     }))
+    } catch { console.log(`Error when editing message`)}
 }
 
 
