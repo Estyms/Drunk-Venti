@@ -1,5 +1,5 @@
 import { Server } from "../mongodb.ts"
-import { Embed, editMessage } from "../../deps.ts"
+import { Embed, editMessage, resume } from "../../deps.ts"
 import { getGenshinDayName } from "../utils/timeRelated.ts"
 import { dailyEvents } from "./dailyEvents.ts"
 
@@ -33,11 +33,14 @@ async function updateDailyInfos() {
     const dailyMessageIdList = await Server.select("daily_message_id", "daily_message_channel").all();
 
     // We create the embed messages
-    const messages = await createDailyEmbedMessages()
+    const messages = await createDailyEmbedMessages();
+
+    resume(0);
 
     // We remove all the servers that do not have a daily message set
     dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((server => {
         try {
+        
         editMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])), {
             content: "",
             embeds: messages
