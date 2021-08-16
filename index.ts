@@ -82,7 +82,7 @@ function start() {
 
   // Embed Messages Infos
   updateDailyInfos();
-  cron("* * * * *", () => {
+  cron("0/5 * * * *", () => {
     updateDailyInfos();
   });
 }
