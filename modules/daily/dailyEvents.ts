@@ -105,12 +105,13 @@ async createEmbedEvents() {
         event.url &&
             stringifyRemainingTime(remainingTime(parseTime(event.end))) != ""
             &&
-            EmbedMessages.push({
+            EmbedMessages.push(new Embed({
                 title: event.name,
                 url: event.url || undefined,
                 image: event.image && event.url ? { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${event.image}` } : undefined,
-                description: stringifyRemainingTime(remainingTime(parseTime(event.end)))
-            })
+                description: stringifyRemainingTime(remainingTime(parseTime(event.end))),
+                color: Math.round(Math.random()*0xffffff)
+            }))
     });
 
     const EmbedFields: EmbedField[] = []
@@ -122,27 +123,30 @@ async createEmbedEvents() {
             &&
             EmbedFields.push({
                 name: event.name,
-                value: stringifyRemainingTime(remainingTime(parseTime(event.end)))
+                value: stringifyRemainingTime(remainingTime(parseTime(event.end))),
             })
-    })
+    });
 
-    EmbedMessages.push({
+    EmbedMessages.push(new Embed({
         title: "Autres",
-        fields: EmbedFields
-    })
+        fields: EmbedFields,
+        color: Math.round(Math.random()*0xffffff)
+    }));
 
 
     // Upcomming Event 
     const nextUpdate = this.getDateOfNextUpdate();
-    EmbedMessages.push(parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf() ? {
+    EmbedMessages.push(parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf() ? new Embed({
         title: "BIENTÔT : " + EventData.upcomming.name,
         url: EventData.upcomming.url || undefined,
         image: EventData.upcomming.image ? { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/${EventData.upcomming.image}` } : undefined,
-        description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start  + (EventData.upcomming.timezoneDependant ? " UTC+8" : " "))), true)
-    } : {
+        description: stringifyRemainingTime(remainingTime(parseTime(EventData.upcomming.start  + (EventData.upcomming.timezoneDependant ? " UTC+8" : " "))), true),
+        color: Math.round(Math.random()*0xffffff)
+    }) : new Embed({
         title: "BIENTÔT : Nouvelle Mise à jour",
-        description: stringifyRemainingTime(remainingTime(nextUpdate), true)
-    })
+        description: stringifyRemainingTime(remainingTime(nextUpdate), true),
+        color: Math.round(Math.random()*0xffffff)
+    }))
 
     return EmbedMessages;
 }

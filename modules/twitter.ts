@@ -1,5 +1,4 @@
 // deno-lint-ignore-file
-import "https://deno.land/x/dotenv@v2.0.0/load.ts";
 
 const headers = {
 	'Authorization': `Bearer ${Deno.env.get("TWITTER_BEARER_TOKEN")}`,
@@ -17,13 +16,16 @@ class twitter {
 	 * @param id ID of the twitter user
 	 */
 	getUserTweets(id: string): Promise<Record<string, any>> {
+
+		
+
 		return fetch(`https://api.twitter.com/2/users/${id}/tweets?exclude=retweets,replies&max_results=5`,
 			{
 				method: 'GET',
 				headers: headers
 			}
 		)
-			.then(async res => JSON.parse(await res.text()))
+			.then(async res => <Record<string, any>> JSON.parse(await res.text()))
 	}
 
 	/**
@@ -37,7 +39,7 @@ class twitter {
 				headers: headers
 			}
 		)
-			.then(async res => JSON.parse(await res.text()))
+			.then(async res => <Record<string, any>> JSON.parse(await res.text()))
 	}
 
 	/**
@@ -50,7 +52,7 @@ class twitter {
 				method: 'GET',
 				headers: headers
 			})
-			.then(async res => JSON.parse(await res.text()))
+			.then(async res => <Record<string, any>> JSON.parse(await res.text()))
 	}
 
 	/**
@@ -63,7 +65,7 @@ class twitter {
 				method: 'GET',
 				headers: headers
 			})
-			.then(async res => JSON.parse(await res.text()))
+			.then(async res => <Record<string, any>> JSON.parse(await res.text()))
 	}
 }
 

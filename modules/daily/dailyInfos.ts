@@ -1,7 +1,8 @@
 import { Server } from "../mongodb.ts"
-import { Embed, editMessage, resume } from "../../deps.ts"
+import { Embed, client} from "../../deps.ts"
 import { getGenshinDayName } from "../utils/timeRelated.ts"
 import { dailyEvents } from "./dailyEvents.ts"
+import { webHookManager } from "../utils/webhookManager.ts"
 
 
 /**
@@ -10,13 +11,15 @@ import { dailyEvents } from "./dailyEvents.ts"
 async function createDailyEmbedMessages(): Promise<Embed[]> {
     const messages = await dailyEvents.createEmbedEvents();
 
-    const message: Embed = new Date().getDay() != 0 ? {
+    const message: Embed = new Date().getDay() != 0 ? new Embed({
         title: "Objets farmables aujourd'hui",
-        image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName()}.png` }
-    } : {
+        image: { url: `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName()}.png` },
+        color: 0x0099E1
+    }) : new Embed({
         title: "Objets farmables aujourd'hui",
-        description: "On est dimanche, donc tout"
-    }
+        description: "On est dimanche, donc tout",
+        color: 0x00D166
+    })
 
     messages.push(message);
 
@@ -34,21 +37,18 @@ async function updateDailyInfos() {
 
     // We create the embed messages
     const messages = await createDailyEmbedMessages();
-
     
     // We remove all the servers that do not have a daily message set
-    try {
-        dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((server => {
+        dailyMessageIdList.filter((server) => server["daily_message_id"] && server["daily_message_channel"]).forEach((async server => {
         
-        
-        editMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])), {
-            content: "",
-            embeds: messages
-            });
-        
-     }))
-    } catch { console.log(`Error when editing message`)}
-}
+        const message = await webHookManager.getWebhookMessage(<string>server["daily_message_channel"], <string>server["daily_message_id"]);
 
+
+        if (!(await webHookManager.editWebhookMessage(message, message.channelID, messages)).success){
+            throw new Error(`Can't edit message for guild ${(await client.guilds.get(<string>message.guildID))?.name}`)
+        }
+
+     }))
+}
 
 export { updateDailyInfos, createDailyEmbedMessages }

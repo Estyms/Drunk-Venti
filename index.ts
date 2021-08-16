@@ -1,7 +1,9 @@
 import './deps.ts'
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
-import { editBotStatus, startBot, sendMessage, cron } from "./deps.ts";
+import { client, cron } from "./deps.ts";
+import {ClientActivity, GatewayIntents} from "./deps.ts";
+import { webHookManager } from "./modules/utils/webhookManager.ts"
 import { Commands } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts"
 import { dailyEvents } from "./modules/daily/dailyEvents.ts"
@@ -17,7 +19,7 @@ async function checkTweets() {
 	// Itterate over every tweets
 	Tweets.forEach((tweet: Tweet) => {
 		// If an error has occured, skip
-		if (tweet["errors"]) return;
+		if (tweet["errors"]) return; 
 
 		// Gets updated tweet
 		Twitter.getUserTweets(String(tweet["user_id"])).then((json) => {
@@ -60,7 +62,7 @@ async function checkTweets() {
  * @param message Message you wanna send
  */
 function postMessage(channelId: string, message: string) {
-	sendMessage(BigInt(channelId), message);
+	client.channels.sendMessage(channelId, message);
 }
 
 /**
@@ -83,31 +85,28 @@ function start() {
 }
 
 
-startBot({
-	token: Deno.env.get("DISCORD_TOKEN") || "",
-	intents: ["Guilds", "GuildMessages", "GuildEmojis"],
+client.on("ready", ()=> {
+	console.log("Bot Ready !")
+	const activity: ClientActivity = {
+		status: 'online',
+		since: 0,
+		afk: false,
+		activity: {
+			name: "!dv help",
+			type: 'STREAMING'
+		}
+	}
+	client.setPresence(activity);
+	webHookManager.create(client);
+	start();
+})
 
-	eventHandlers: {
-		// What happens when connected to discord
-		ready() {
-			console.log("Bot Ready");
-			editBotStatus({
-				status: "online",
-				activities: [{
-					name: "!dv help",
-					createdAt: 0,
-					type: 0,
-				}],
-			});
-			start();
-		},
+client.on("messageCreate", (message)=> {
+	if (message.content.startsWith("!dv")) {
+		const args = message.content.split(" ");
+		Commands(args[1], message);
+	}
+})
 
-		// When a message is created
-		messageCreate(message) {
-			if (message.content.startsWith("!dv")) {
-				const args = message.content.split(" ");
-				Commands(args[1], message);
-			}
-		},
-	},
-});
+
+client.connect(Deno.env.get("DISCORD_TOKEN"), [GatewayIntents.GUILDS, GatewayIntents.GUILD_MESSAGES, GatewayIntents.GUILD_EMOJIS, GatewayIntents.GUILD_WEBHOOKS, GatewayIntents.GUILD_INTEGRATIONS]);

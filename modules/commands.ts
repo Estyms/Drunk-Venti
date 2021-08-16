@@ -1,35 +1,36 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
 import { createDailyEmbedMessages } from "./daily/dailyInfos.ts"
-import { DiscordenoMessage, deleteMessage, sendMessage } from "../deps.ts";
+import { Message, client, TextChannel} from "../deps.ts";
+import { webHookManager } from "./utils/webhookManager.ts"
 
 /**
  * Executes a command
  * @param command The command that is executed
  * @param message The message that contains the command
  */
-async function executeCommand(command: string, message: DiscordenoMessage) {
-    const serverTest = await Server.where("guild_id", String(message.guildId))
+async function executeCommand(command: string, message: Message) {
+    const serverTest = await Server.where("guild_id", String(message.guildID))
         .first();
 
     if (!serverTest) {
         await Server.create([{
-            guild_id: String(message.guildId),
+            guild_id: String(message.guildID),
         }]);
     }
 
-    const server = await Server.where("guild_id", String(message.guildId))
+    const server = await Server.where("guild_id", String(message.guildID))
         .first();
 
     switch (command) {
         // Sets the News Channel
         case "setNewsChannel": {
-            if (server["reminder_channel"] == String(message.channelId)) {
+            if (server["reminder_channel"] == String(message.channelID)) {
                 message.reply("This channel is already the News Channel !");
                 break;
             }
-            Server.where("guild_id", String(message.guildId)).update({
-                news_channel: String(message.channelId),
+            Server.where("guild_id", String(message.guildID)).update({
+                news_channel: String(message.channelID),
             });
             message.reply("This channel is now set as the News Channel !");
             break;
@@ -55,11 +56,10 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
                     return;
                 }
 
-                if ((await Server.tweets(String(message.guildId))).find(m => m["user_id"] == json["data"]["id"])) {
+                if ((await Server.tweets(String(message.guildID))).find(m => m["user_id"] == json["data"]["id"])) {
                     message.reply("This account is already tracked !");
                     return;
                 }
-
 
                 Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
                     if (res["errors"]) {
@@ -74,7 +74,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
                     }
 
                     ServerTweet.create([{
-                        serverId: String(message.guildId),
+                        serverId: String(message.guildID),
                         tweetId: String(json["data"]["id"]),
                     }]);
 
@@ -95,7 +95,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 
             Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
                 if (
-                    !(await Server.tweets(String(message.guildId))).find(c => c["user_id"] === json["data"]["id"])
+                    !(await Server.tweets(String(message.guildID))).find(c => c["user_id"] === json["data"]["id"])
                 ) {
                     message.reply("This account isn't tracked !");
                     return;
@@ -103,7 +103,7 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
 
 
                 ServerTweet.where({
-                    serverId: String(message.guildId),
+                    serverId: String(message.guildID),
                     tweetId: String(json["data"]["id"]),
                 }).delete()
 
@@ -123,23 +123,41 @@ async function executeCommand(command: string, message: DiscordenoMessage) {
         // Creates the Daily Message
         case "createDailyMessage": {
 
-            if (server["reminder_channel"] == String(message.channelId)) {
+            await webHookManager.createChannelWebhook(<string>message.channelID);
+
+            if (server["reminder_channel"] == String(message.channelID)) {
                 message.reply("You can't set the daily message in the News channel !")
                 break;
             }
 
             if (server["daily_message_id"]) {
-                deleteMessage(BigInt(String(server["daily_message_channel"])), BigInt(String(server["daily_message_id"])))
+                try{
+                    (await webHookManager.getWebhookMessage(<string> server["daily_message_channel"],<string> server["daily_message_id"])).delete()
+                } catch {""}
             }
 
-            const msg = await sendMessage(message.channelId, {
-                embeds: await createDailyEmbedMessages()
-            })
 
+            const dailyMessageChannel = <TextChannel> await client.channels.get(String(message.channelID));
 
-            Server.where("guild_id", String(message.guildId)).update({
-                daily_message_channel: String(message.channelId),
-                daily_message_id: String(msg.id)
+            
+
+            const messageData = await webHookManager.sendWebhookMessage(dailyMessageChannel.id,
+                await createDailyEmbedMessages()
+            )
+
+            if (!messageData.success){
+                message.reply("An error has occured");
+                return;
+            }
+
+            if (!messageData.message) {
+                message.reply("An error has occured")
+                return
+            }
+
+            Server.where("guild_id", <string>messageData.message.guildID).update({
+                daily_message_channel: String(messageData.message.channelID),
+                daily_message_id: String(messageData.message.id)
             })
 
             break;
