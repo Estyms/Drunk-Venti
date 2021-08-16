@@ -48,6 +48,7 @@ async function updateDailyInfos() {
     server["daily_message_id"] && server["daily_message_channel"]
   ).forEach(
     (async (server) => {
+      try {
       const message = await webHookManager.getWebhookMessage(
         <string> server["daily_message_channel"],
         <string> server["daily_message_id"],
@@ -66,7 +67,10 @@ async function updateDailyInfos() {
           ))?.name}`,
         );
       }
-    }),
+    } catch {
+      console.log("Can't edit message");
+    }
+  }),
   );
 }
 
