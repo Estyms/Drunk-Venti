@@ -1,8 +1,8 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
-import { createDailyEmbedMessages } from "./daily/dailyInfos.ts"
-import { Message, client, TextChannel} from "../deps.ts";
-import { webHookManager } from "./utils/webhookManager.ts"
+import { createDailyEmbedMessages } from "./daily/dailyInfos.ts";
+import { client, Message, TextChannel } from "../deps.ts";
+import { webHookManager } from "./utils/webhookManager.ts";
 
 /**
  * Executes a command
@@ -10,162 +10,174 @@ import { webHookManager } from "./utils/webhookManager.ts"
  * @param message The message that contains the command
  */
 async function executeCommand(command: string, message: Message) {
-    const serverTest = await Server.where("guild_id", String(message.guildID))
-        .first();
+  const serverTest = await Server.where("guild_id", String(message.guildID))
+    .first();
 
-    if (!serverTest) {
-        await Server.create([{
-            guild_id: String(message.guildID),
-        }]);
+  if (!serverTest) {
+    await Server.create([{
+      guild_id: String(message.guildID),
+    }]);
+  }
+
+  const server = await Server.where("guild_id", String(message.guildID))
+    .first();
+
+  switch (command) {
+    // Sets the News Channel
+    case "setNewsChannel": {
+      if (server["reminder_channel"] == String(message.channelID)) {
+        message.reply("This channel is already the News Channel !");
+        break;
+      }
+      Server.where("guild_id", String(message.guildID)).update({
+        news_channel: String(message.channelID),
+      });
+      message.reply("This channel is now set as the News Channel !");
+      break;
     }
 
-    const server = await Server.where("guild_id", String(message.guildID))
-        .first();
+    // Adds a twitter account from the news of the server
 
-    switch (command) {
-        // Sets the News Channel
-        case "setNewsChannel": {
-            if (server["reminder_channel"] == String(message.channelID)) {
-                message.reply("This channel is already the News Channel !");
-                break;
-            }
-            Server.where("guild_id", String(message.guildID)).update({
-                news_channel: String(message.channelID),
-            });
-            message.reply("This channel is now set as the News Channel !");
-            break;
+    case "addTwitterAccount": {
+      if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+        message.reply("This is not a twitter username.");
+        break;
+      }
+
+      if (!server["news_channel"]) {
+        message.reply(
+          "Please set News channel first with command ``!dv setNewsChannel`` !",
+        );
+        break;
+      }
+
+      Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
+        if (json["errors"]) {
+          return;
         }
 
-        // Adds a twitter account from the news of the server
-        case "addTwitterAccount": {
-            if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-                message.reply("This is not a twitter username.");
-                break;
-            }
-
-            if (!server["news_channel"]) {
-                message.reply(
-                    "Please set News channel first with command ``!dv setNewsChannel`` !",
-                );
-                break;
-            }
-
-            Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
-                if (json["errors"]) {
-
-                    return;
-                }
-
-                if ((await Server.tweets(String(message.guildID))).find(m => m["user_id"] == json["data"]["id"])) {
-                    message.reply("This account is already tracked !");
-                    return;
-                }
-
-                Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
-                    if (res["errors"]) {
-                        message.reply("This Account is invalid.");
-                        return;
-                    }
-
-                    if (await Tweet.where("user_id", json["data"]["id"]).count() === 0) {
-                        Tweet.create([{
-                            user_id: json["data"]["id"],
-                        }]);
-                    }
-
-                    ServerTweet.create([{
-                        serverId: String(message.guildID),
-                        tweetId: String(json["data"]["id"]),
-                    }]);
-
-                    message.reply(
-                        `Account @${json["data"]["username"]} is now tracked !`,
-                    );
-                });
-            });
-            break;
+        if (
+          (await Server.tweets(String(message.guildID))).find((m) =>
+            m["user_id"] == json["data"]["id"]
+          )
+        ) {
+          message.reply("This account is already tracked !");
+          return;
         }
 
-        // Remove a twitter account from the news of the server
-        case "removeTwitterAccount": {
-            if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-                message.reply("This is not a twitter username.");
-                break;
-            }
+        Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
+          if (res["errors"]) {
+            message.reply("This Account is invalid.");
+            return;
+          }
 
-            Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
-                if (
-                    !(await Server.tweets(String(message.guildID))).find(c => c["user_id"] === json["data"]["id"])
-                ) {
-                    message.reply("This account isn't tracked !");
-                    return;
-                }
+          if (await Tweet.where("user_id", json["data"]["id"]).count() === 0) {
+            Tweet.create([{
+              user_id: json["data"]["id"],
+            }]);
+          }
 
+          ServerTweet.create([{
+            serverId: String(message.guildID),
+            tweetId: String(json["data"]["id"]),
+          }]);
 
-                ServerTweet.where({
-                    serverId: String(message.guildID),
-                    tweetId: String(json["data"]["id"]),
-                }).delete()
+          message.reply(
+            `Account @${json["data"]["username"]} is now tracked !`,
+          );
+        });
+      });
+      break;
+    }
 
-                if (await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0) {
-                    Tweet.where("user_id", json["data"]["id"]).delete();
-                }
+    // Remove a twitter account from the news of the server
 
-                message.reply(
-                    `Account @${json["data"]["username"]} is no longer tracked !`,
-                );
-            });
+    case "removeTwitterAccount": {
+      if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+        message.reply("This is not a twitter username.");
+        break;
+      }
 
-            break;
+      Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
+        if (
+          !(await Server.tweets(String(message.guildID))).find((c) =>
+            c["user_id"] === json["data"]["id"]
+          )
+        ) {
+          message.reply("This account isn't tracked !");
+          return;
         }
 
+        ServerTweet.where({
+          serverId: String(message.guildID),
+          tweetId: String(json["data"]["id"]),
+        }).delete();
 
-        // Creates the Daily Message
-        case "createDailyMessage": {
-
-            await webHookManager.createChannelWebhook(<string>message.channelID);
-
-            if (server["reminder_channel"] == String(message.channelID)) {
-                message.reply("You can't set the daily message in the News channel !")
-                break;
-            }
-
-            if (server["daily_message_id"]) {
-                try{
-                    (await webHookManager.getWebhookMessage(<string> server["daily_message_channel"],<string> server["daily_message_id"])).delete()
-                } catch {""}
-            }
-
-
-            const dailyMessageChannel = <TextChannel> await client.channels.get(String(message.channelID));
-
-            
-
-            const messageData = await webHookManager.sendWebhookMessage(dailyMessageChannel.id,
-                await createDailyEmbedMessages()
-            )
-
-            if (!messageData.success){
-                message.reply("An error has occured");
-                return;
-            }
-
-            if (!messageData.message) {
-                message.reply("An error has occured")
-                return
-            }
-
-            Server.where("guild_id", <string>messageData.message.guildID).update({
-                daily_message_channel: String(messageData.message.channelID),
-                daily_message_id: String(messageData.message.id)
-            })
-
-            break;
+        if (
+          await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0
+        ) {
+          Tweet.where("user_id", json["data"]["id"]).delete();
         }
 
-        case "help": {
-            message.reply(
-                " Here are the commands !\
+        message.reply(
+          `Account @${json["data"]["username"]} is no longer tracked !`,
+        );
+      });
+
+      break;
+    }
+
+    // Creates the Daily Message
+
+    case "createDailyMessage": {
+      await webHookManager.createChannelWebhook(<string> message.channelID);
+
+      if (server["reminder_channel"] == String(message.channelID)) {
+        message.reply("You can't set the daily message in the News channel !");
+        break;
+      }
+
+      if (server["daily_message_id"]) {
+        try {
+          (await webHookManager.getWebhookMessage(
+            <string> server["daily_message_channel"],
+            <string> server["daily_message_id"],
+          )).delete();
+        } catch {
+          "";
+        }
+      }
+
+      const dailyMessageChannel = <TextChannel> await client.channels.get(
+        String(message.channelID),
+      );
+
+      const messageData = await webHookManager.sendWebhookMessage(
+        dailyMessageChannel.id,
+        await createDailyEmbedMessages(),
+      );
+
+      if (!messageData.success) {
+        message.reply("An error has occured");
+        return;
+      }
+
+      if (!messageData.message) {
+        message.reply("An error has occured");
+        return;
+      }
+
+      Server.where("guild_id", <string> messageData.message.guildID).update({
+        daily_message_channel: String(messageData.message.channelID),
+        daily_message_id: String(messageData.message.id),
+      });
+
+      break;
+    }
+
+    case "help": {
+      message.reply(
+" Here are the commands !\
             ```• !dv help : Displays available commands.\n\
 \n\
 • !dv setNewsChannel : Set current channel as the News Channel.\n\
@@ -176,12 +188,12 @@ async function executeCommand(command: string, message: Message) {
 \n\
 • !dv createDailyMessage : Creates the embed message for daily informations. ```\
 ",
-            );
-            break;
-        }
-
-        default:
+      );
+      break;
     }
+
+    default:
+  }
 }
 
 export { executeCommand as Commands };

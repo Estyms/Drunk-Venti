@@ -1,6 +1,7 @@
 import {
   Client,
   Embed,
+  fetchAuto,
   Message,
   RESTEndpoints,
   RESTManager,
@@ -20,32 +21,42 @@ class WebHookManagerClass {
     WebHookManagerClass.manager = new RESTManager({
       token: Deno.env.get("DISCORD_TOKEN"),
       client: client,
-      version:8
+      version: 8,
     });
-    WebHookManagerClass.restEndpoints = new RESTEndpoints(WebHookManagerClass.manager);
+    WebHookManagerClass.restEndpoints = new RESTEndpoints(
+      WebHookManagerClass.manager,
+    );
     WebHookManagerClass.client = client;
   }
 
   async createChannelWebhook(channelID: string): Promise<WebhookPayload> {
+    const avatarData = await fetchAuto(
+      <string> WebHookManagerClass.client.user?.avatarURL(),
+    );
+
     const webhook = await this.getWebhookPayload(channelID);
     if (webhook == undefined) {
       return await WebHookManagerClass.restEndpoints.createWebhook(channelID, {
         name: WebHookManagerClass.client.user?.username,
-        avatar: WebHookManagerClass.client.user?.avatar,
+        avatar: avatarData,
       });
     }
+
     return webhook;
   }
 
   async getWebhookPayload(
     channelID: string,
   ): Promise<WebhookPayload | undefined> {
-    const webhooks = await WebHookManagerClass.restEndpoints.getChannelWebhooks(channelID);
+    const webhooks = await WebHookManagerClass.restEndpoints.getChannelWebhooks(
+      channelID,
+    );
     if (webhooks == undefined) return;
-    const webhook = webhooks.find((c) =>
+    const webhookPayload = webhooks.find((c) =>
       c.user?.username == WebHookManagerClass.client.user?.username
     );
-    return webhook;
+
+    return webhookPayload;
   }
 
   async sendWebhookMessage(
@@ -67,9 +78,14 @@ class WebHookManagerClass {
   ): Promise<{ success: boolean }> {
     const webhookPayload = await this.getWebhookPayload(channelID);
     if (!webhookPayload) return { success: false };
-    WebHookManagerClass.restEndpoints.editWebhookMessage(webhookPayload.id, <string> webhookPayload.token, message.id, {
-        embeds: embeds
-    });
+    WebHookManagerClass.restEndpoints.editWebhookMessage(
+      webhookPayload.id,
+      <string> webhookPayload.token,
+      message.id,
+      {
+        embeds: embeds,
+      },
+    );
     return { success: true };
   }
 
@@ -79,7 +95,7 @@ class WebHookManagerClass {
       messageID,
     );
     return await new Message(
-        WebHookManagerClass.client,
+      WebHookManagerClass.client,
       message,
       <TextChannel> await WebHookManagerClass.client.channels.get(channelID),
       new User(
@@ -89,7 +105,6 @@ class WebHookManagerClass {
     );
   }
 }
-
 
 const webHookManager = new WebHookManagerClass();
 export { webHookManager };
