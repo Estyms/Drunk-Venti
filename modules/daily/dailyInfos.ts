@@ -1,5 +1,5 @@
 import { Server } from "../mongodb.ts";
-import { client, Embed } from "../../deps.ts";
+import { client, Embed, GatewayIntents } from "../../deps.ts";
 import { getGenshinDayName } from "../utils/timeRelated.ts";
 import { dailyEvents } from "./dailyEvents.ts";
 import { webHookManager } from "../utils/webhookManager.ts";
@@ -69,6 +69,15 @@ async function updateDailyInfos() {
       }
     } catch {
       console.log("Can't edit message");
+      client.destroy();
+      client.connect(Deno.env.get("DISCORD_TOKEN"), [
+        GatewayIntents.GUILDS,
+        GatewayIntents.GUILD_MESSAGES,
+        GatewayIntents.GUILD_EMOJIS,
+        GatewayIntents.GUILD_WEBHOOKS,
+        GatewayIntents.GUILD_INTEGRATIONS,
+      ]);
+      
     }
   }),
   );
