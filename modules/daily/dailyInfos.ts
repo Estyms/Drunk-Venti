@@ -69,7 +69,7 @@ async function updateDailyInfos() {
       }
     } catch {
       console.log("Can't edit message");
-      client.destroy();
+      await client.destroy();
       client.connect(Deno.env.get("DISCORD_TOKEN"), [
         GatewayIntents.GUILDS,
         GatewayIntents.GUILD_MESSAGES,
