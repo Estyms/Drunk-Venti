@@ -12,7 +12,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 
   const message: Embed = new Date().getDay() != 0
     ? new Embed({
-      title: "Objets farmables aujourd'hui",
+      title: "Todays Farmable Objects",
       image: {
         url:
           `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName()}.png`,
@@ -20,8 +20,8 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
       color: 0x0099E1,
     })
     : new Embed({
-      title: "Objets farmables aujourd'hui",
-      description: "On est dimanche, donc tout",
+      title: "Todays Farmable Objects",
+      description: "It's Sunday, you can farm anything !",
       color: 0x00D166,
     });
 

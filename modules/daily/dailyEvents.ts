@@ -163,7 +163,7 @@ class dailyEvents {
     EmbedMessages.push(
       parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf()
         ? new Embed({
-          title: "BIENTÔT : " + EventData.upcomming.name,
+          title: "SOON : " + EventData.upcomming.name,
           url: EventData.upcomming.url + "?".repeat(EmbedMessages.length) || undefined,
           image: EventData.upcomming.image
             ? {
@@ -185,7 +185,7 @@ class dailyEvents {
           color: Math.round(Math.random() * 0xffffff),
         })
         : new Embed({
-          title: "BIENTÔT : Nouvelle Mise à jour",
+          title: "SOON : Next update",
           description: stringifyRemainingTime(remainingTime(nextUpdate), true),
           color: Math.round(Math.random() * 0xffffff),
         }),

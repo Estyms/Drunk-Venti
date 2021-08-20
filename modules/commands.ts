@@ -180,11 +180,11 @@ async function executeCommand(command: string, message: Message) {
 " Here are the commands !\
             ```• !dv help : Displays available commands.\n\
 \n\
-• !dv setNewsChannel : Set current channel as the News Channel.\n\
+• !dv setNewsChannel : Sets current channel as the News Channel.\n\
 \n\
-• !dv addTwitterAccount [twitterAccount] : Add twitterAccount to track list.\n\
+• !dv addTwitterAccount [twitterAccount] : Adds twitterAccount to track list.\n\
 \n\
-• !dv removeTwitterAccount [twitterAccount] : Remove twitter Account from track list.\n\
+• !dv removeTwitterAccount [twitterAccount] : Removes twitter Account from track list.\n\
 \n\
 • !dv createDailyMessage : Creates the embed message for daily informations. ```\
 ",

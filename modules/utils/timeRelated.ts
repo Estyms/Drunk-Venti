@@ -58,20 +58,20 @@ function stringifyRemainingTime(
 ): string {
   if (remaining.remainingDays) {
     return upcomming
-      ? `Dans ${remaining.remainingDays} jour(s)`
-      : `${remaining.remainingDays} jour(s) restant(s)`;
+      ? `Dans ${remaining.remainingDays} day(s)`
+      : `${remaining.remainingDays} day(s) remaining`;
   }
   if (remaining.remainingHours) {
     return upcomming
       ? `Dans ${remaining.remainingHours +
-        (remaining.remainingMinutes > 30 ? 1 : 0)} heure(s)`
+        (remaining.remainingMinutes > 30 ? 1 : 0)} day(s)`
       : `${remaining.remainingHours +
-        (remaining.remainingMinutes > 30 ? 1 : 0)} heure(s) restante(s)`;
+        (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s) remaining`;
   }
   if (remaining.remainingMinutes) {
     return upcomming
       ? `Dans ${remaining.remainingMinutes} minute(s)`
-      : `${remaining.remainingMinutes} minute(s) restante(s)`;
+      : `${remaining.remainingMinutes} minute(s) remaining)`;
   }
   return "";
 }
