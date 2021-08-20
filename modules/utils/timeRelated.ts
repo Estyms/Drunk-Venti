@@ -58,12 +58,12 @@ function stringifyRemainingTime(
 ): string {
   if (remaining.remainingDays) {
     return upcomming
-      ? `Dans ${remaining.remainingDays} day(s)`
+      ? `In ${remaining.remainingDays} day(s)`
       : `${remaining.remainingDays} day(s) remaining`;
   }
   if (remaining.remainingHours) {
     return upcomming
-      ? `Dans ${remaining.remainingHours +
+      ? `In ${remaining.remainingHours +
         (remaining.remainingMinutes > 30 ? 1 : 0)} day(s)`
       : `${remaining.remainingHours +
         (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s) remaining`;
