@@ -36,7 +36,7 @@ class WebHookManagerClass {
 
     const webhook = await this.getWebhookPayload(channelID);
     if (webhook == undefined) {
-      return await WebHookManagerClass.restEndpoints.createWebhook(channelID, {
+      return WebHookManagerClass.restEndpoints.createWebhook(channelID, {
         name: WebHookManagerClass.client.user?.username,
         avatar: avatarData,
       });
@@ -94,7 +94,7 @@ class WebHookManagerClass {
       channelID,
       messageID,
     );
-    return await new Message(
+    return new Message(
       WebHookManagerClass.client,
       message,
       <TextChannel> await WebHookManagerClass.client.channels.get(channelID),
