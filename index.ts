@@ -1,8 +1,7 @@
-import "./deps.ts";
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
 import { client, cron } from "./deps.ts";
-import { ClientActivity, GatewayIntents } from "./deps.ts";
+import { ClientActivity, GatewayIntents, PermissionFlags } from "./deps.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
 import { Commands } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
@@ -104,7 +103,21 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", (message) => {
+  if (message.author.bot) return;
   if (message.content.startsWith("!dv")) {
+
+    
+    const adminPerm = Object.values(PermissionFlags["ADMINISTRATOR"]).reduce(
+      (all, p) => BigInt(all) | BigInt(p),
+      0n
+    )
+
+    if (!message.member?.permissions.has(adminPerm, true)){
+      message.reply("You do not have the required permissions to use this bot.");
+      return
+    }
+
+
     const args = message.content.split(" ");
     Commands(args[1], message);
   }
