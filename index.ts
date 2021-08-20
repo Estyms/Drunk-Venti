@@ -1,3 +1,4 @@
+import "./deps.ts"
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
 import { client, cron } from "./deps.ts";
@@ -106,7 +107,7 @@ client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith("!dv")) {
 
-    
+
     const adminPerm = Object.values(PermissionFlags["ADMINISTRATOR"]).reduce(
       (all, p) => BigInt(all) | BigInt(p),
       0n
