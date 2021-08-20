@@ -31,6 +31,7 @@ class dailyEvents {
     this.getEventsData();
   }
 
+
   /**
  *  Gets all the events of the game
  */
@@ -104,6 +105,7 @@ class dailyEvents {
     const upcommingEvent = this.getUpcommingEvent(allEvents);
 
     this.AllEvents = { currents: currentEvents, upcomming: upcommingEvent };
+
   }
 
   /**
@@ -115,13 +117,13 @@ class dailyEvents {
     const EmbedMessages: Embed[] = [];
 
     // Current Major Events
-    EventData.currents.forEach((event) => {
-      event.url &&
+    this.AllEvents?.currents.filter(e=>e.url).forEach(event=>
+    {
         stringifyRemainingTime(remainingTime(parseTime(event.end))) != "" &&
         EmbedMessages.push(
           new Embed({
             title: event.name,
-            url: event.url || undefined,
+            url: event.url + "?".repeat(EmbedMessages.length) || undefined,
             image: event.image && event.url
               ? {
                 url:
@@ -162,7 +164,7 @@ class dailyEvents {
       parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf()
         ? new Embed({
           title: "BIENTÔT : " + EventData.upcomming.name,
-          url: EventData.upcomming.url || undefined,
+          url: EventData.upcomming.url + "?".repeat(EmbedMessages.length) || undefined,
           image: EventData.upcomming.image
             ? {
               url:
@@ -188,6 +190,7 @@ class dailyEvents {
           color: Math.round(Math.random() * 0xffffff),
         }),
     );
+
 
     return EmbedMessages;
   }
