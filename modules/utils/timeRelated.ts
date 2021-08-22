@@ -64,7 +64,7 @@ function stringifyRemainingTime(
   if (remaining.remainingHours) {
     return upcomming
       ? `In ${remaining.remainingHours +
-        (remaining.remainingMinutes > 30 ? 1 : 0)} day(s)`
+        (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s)`
       : `${remaining.remainingHours +
         (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s) remaining`;
   }
