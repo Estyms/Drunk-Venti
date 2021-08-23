@@ -30,6 +30,13 @@ async function executeCommand(command: string, message: Message) {
         setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
       }
+
+      if (server["daily_message_channel"] == String(message.channelID)){
+        const newMsg = message.reply("You can't set the News Channel in the same channel as the Daily Message !");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
+        break;
+      }
+
       Server.where("guild_id", String(message.guildID)).update({
         news_channel: String(message.channelID),
       });
@@ -165,7 +172,7 @@ async function executeCommand(command: string, message: Message) {
     case "createDailyMessage": {
       await webHookManager.createChannelWebhook(<string> message.channelID);
 
-      if (server["reminder_channel"] == String(message.channelID)) {
+      if (server["news_channel"] == String(message.channelID)) {
         const newMsg = message.reply("You can't set the daily message in the News channel !");
         setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
