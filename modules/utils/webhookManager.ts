@@ -29,25 +29,39 @@ class WebHookManagerClass {
     WebHookManagerClass.client = client;
   }
 
-  async getMessage(channelID: string, messageID:string){
-    try {
-      const messagePayload =  await WebHookManagerClass.restEndpoints.getChannelMessage(channelID, messageID);
-      return new Message(WebHookManagerClass.client, messagePayload, <TextChannel> await WebHookManagerClass.client.channels.get(channelID), new User(WebHookManagerClass.client, messagePayload.author));
-    } catch {
-      return null;
-    }
+  async getMessage(channelID: string, messageID: string) {
+    const messagePayload = await WebHookManagerClass.restEndpoints
+      .getChannelMessage(channelID, messageID).catch((e) => console.log(e));
+
+    const textChannel = await WebHookManagerClass.client.channels.get(channelID).catch((e)=>console.log(e));
+
+    if (!messagePayload || !textChannel) return null;
+
+    return new Message(
+      WebHookManagerClass.client,
+      messagePayload,
+      <TextChannel> textChannel,
+      new User(WebHookManagerClass.client, messagePayload.author),
+    );
   }
 
-  async createChannelWebhook(channelID: string): Promise<WebhookPayload> {
+  async createChannelWebhook(
+    channelID: string,
+  ): Promise<WebhookPayload | undefined> {
     const avatarData = await fetchAuto(
       <string> WebHookManagerClass.client.user?.avatarURL(),
-    );
+    ).catch((e) => console.log(e));
 
-    const webhook = await this.getWebhookPayload(channelID);
+    const webhook = await this.getWebhookPayload(channelID).catch((e) =>
+      console.log(e)
+    );
     if (webhook == undefined) {
       return WebHookManagerClass.restEndpoints.createWebhook(channelID, {
         name: WebHookManagerClass.client.user?.username,
-        avatar: avatarData,
+        avatar: avatarData ? avatarData : undefined,
+      }).catch((e) => {
+        console.log(e);
+        return undefined;
       });
     }
 
@@ -59,7 +73,7 @@ class WebHookManagerClass {
   ): Promise<WebhookPayload | undefined> {
     const webhooks = await WebHookManagerClass.restEndpoints.getChannelWebhooks(
       channelID,
-    );
+    ).catch((e) => console.log(e));
     if (webhooks == undefined) return;
     const webhookPayload = webhooks.find((c) =>
       c.user?.username == WebHookManagerClass.client.user?.username
@@ -72,12 +86,17 @@ class WebHookManagerClass {
     channelID: string,
     embeds: Embed[],
   ): Promise<{ message?: Message; success: boolean }> {
-    const webhookPayload = await this.getWebhookPayload(channelID);
+    const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
+      console.log(e)
+    );
     if (!webhookPayload) return { success: false };
     const message = await new Webhook(webhookPayload).send({
       embeds: embeds,
-    });
-    return { message: message, success: true };
+    }).catch((e) => console.log(e));
+    return {
+      message: message ? message : undefined,
+      success: message ? true : false,
+    };
   }
 
   async editWebhookMessage(
@@ -85,7 +104,9 @@ class WebHookManagerClass {
     channelID: string,
     embeds: Embed[],
   ): Promise<{ success: boolean }> {
-    const webhookPayload = await this.getWebhookPayload(channelID);
+    const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
+      console.log(e)
+    );
     if (!webhookPayload) return { success: false };
     WebHookManagerClass.restEndpoints.editWebhookMessage(
       webhookPayload.id,
@@ -94,27 +115,34 @@ class WebHookManagerClass {
       {
         embeds: embeds,
       },
-    );
+    ).catch((e) => console.log(e));
     return { success: true };
   }
 
   async getWebhookMessage(channelID: string, messageID: string) {
-    try {
     const message = await WebHookManagerClass.restEndpoints.getChannelMessage(
       channelID,
       messageID,
+    ).catch((e) => console.log(e));
+
+    if (!message) return null;
+
+    const textChannel = await WebHookManagerClass.client.channels.get(channelID)
+      .catch((e) => console.log(e));
+    const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
+      console.log(e)
     );
-    return new Message(
-      WebHookManagerClass.client,
-      message,
-      <TextChannel> await WebHookManagerClass.client.channels.get(channelID),
-      new User(
+
+    if (!textChannel || !webHookManager) {
+      return new Message(
         WebHookManagerClass.client,
-        <UserPayload> (await this.getWebhookPayload(channelID))?.user,
-      ),
-    );
-    } catch {
-      return null;
+        message,
+        <TextChannel> textChannel,
+        new User(
+          WebHookManagerClass.client,
+          <UserPayload> webhookPayload?.user,
+        ),
+      );
     }
   }
 }
