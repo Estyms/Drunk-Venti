@@ -45,7 +45,7 @@ function checkPerms(
   checkAdmin = false,
 ): boolean {
     if (member.guild.ownerID === member.id) return true;
-    return permissionToCheck.every(((value, _i, _a) => {console.log(value); return member.permissions.has(PermissionFlags[value], checkAdmin)}));
+    return permissionToCheck.every(((value, _i, _a) => {return member.permissions.has(PermissionFlags[value], checkAdmin)}));
 }
 
 export { checkPerms, Permissions };

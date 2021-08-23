@@ -114,7 +114,6 @@ client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith("!dv")) {
     if (!checkPerms([Permissions.ADMINISTRATOR], <Member> message.member, true)) {
-      console.log(message.member?.permissions.toJSON())
       return message.reply("You do not have the required permissions");
     }
 
