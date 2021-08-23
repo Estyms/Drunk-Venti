@@ -56,10 +56,11 @@ async function updateDailyInfos() {
         <string> server["daily_message_channel"],
         <string> server["daily_message_id"],
       ).catch((e) => console.log(e));
-
+      
+      console.log(message);
+      
       if (!message) return;
 
-      console.log(message);
 
       await webHookManager.editWebhookMessage(
         message,

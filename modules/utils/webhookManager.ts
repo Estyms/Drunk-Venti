@@ -129,18 +129,20 @@ class WebHookManagerClass {
 
     const textChannel = await WebHookManagerClass.client.channels.get(channelID)
       .catch((e) => console.log(e));
+
     const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
       console.log(e)
     );
 
     if (!textChannel || !webHookManager) {
+      console.log("Exists")
       return new Message(
         WebHookManagerClass.client,
         message,
         <TextChannel> textChannel,
         new User(
           WebHookManagerClass.client,
-          <UserPayload> webhookPayload?.user,
+          <UserPayload> (<WebhookPayload> webhookPayload).user,
         ),
       );
     }
