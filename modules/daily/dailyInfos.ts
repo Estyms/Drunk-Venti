@@ -44,47 +44,27 @@ async function updateDailyInfos() {
   // We create the embed messages
   const messages = await createDailyEmbedMessages();
 
-
   // We remove all the servers that do not have a daily message set
   dailyMessageIdList.filter((server) =>
     server["daily_message_id"] && server["daily_message_channel"]
   ).forEach(
     (async (server) => {
-      if (await client.guilds.get(<string> server["guild_id"]) == undefined) return;
-      try {
+      if (await client.guilds.get(<string> server["guild_id"]) == undefined) {
+        return;
+      }
       const message = await webHookManager.getWebhookMessage(
         <string> server["daily_message_channel"],
         <string> server["daily_message_id"],
-      );
+      ).catch((e) => console.log(e));
 
       if (!message) return;
 
-      if (
-        !(await webHookManager.editWebhookMessage(
-          message,
-          message.channelID,
-          messages,
-        )).success
-      ) {
-        throw new Error(
-          `Can't edit message for guild ${(await client.guilds.get(
-            <string> message.guildID,
-          ))?.name}`,
-        );
-      }
-    } catch {
-      console.log("Can't edit message");
-      await client.destroy();
-      client.connect(Deno.env.get("DISCORD_TOKEN"), [
-        GatewayIntents.GUILDS,
-        GatewayIntents.GUILD_MESSAGES,
-        GatewayIntents.GUILD_EMOJIS,
-        GatewayIntents.GUILD_WEBHOOKS,
-        GatewayIntents.GUILD_INTEGRATIONS,
-      ]);
-      
-    }
-  }),
+      await webHookManager.editWebhookMessage(
+        message,
+        message.channelID,
+        messages,
+      ).catch((e)=>console.log(e));
+    }),
   );
 }
 
