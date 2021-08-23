@@ -121,6 +121,9 @@ client.on("guildLoaded", checkGuild);
 client.on("guildCreate", async (guild) => {
   checkGuild(guild);
   const server = await Server.where("guild_id", String(guild.id)).first();
+
+  if (!server) return;
+
   const message = await webHookManager.getMessage(
     <string> server["daily_message_channel"],
     <string> server["daily_message_id"],
