@@ -144,7 +144,6 @@ async function executeCommand(command: string, message: Message) {
             <string> server["daily_message_id"],
           )
           if (message) {
-            console.log(message.guild?.name)
             message.delete();
           
           }
@@ -171,9 +170,6 @@ async function executeCommand(command: string, message: Message) {
         message.reply("An error has occured");
         return;
       }
-
-      console.log(message.guildID);
-      console.log(await Server.where("guild_id", <string> message.guildID).all())
 
       Server.where("guild_id", <string> message.guildID).update({
         daily_message_channel: String(messageData.message.channelID),
