@@ -74,7 +74,7 @@ async function checkTweets() {
  * @param message Message you wanna send
  */
 function postMessage(channelId: string, message: string) {
-  client.channels.sendMessage(channelId, message).catch((e)=>console.log(e));
+  client.channels.sendMessage(channelId, message).catch((e)=>console.error(e));
 }
 
 /**
@@ -127,9 +127,9 @@ client.on("guildCreate", async (guild) => {
   const message = await webHookManager.getMessage(
     <string> server["daily_message_channel"],
     <string> server["daily_message_id"],
-  ).catch(e=>console.log(e))
+  ).catch(e=>console.error(e))
 
-  if (message) message.delete().catch((e)=>console.log(e));
+  if (message) message.delete().catch((e)=>console.error(e));
 
   
   Server.where("guild_id", String(guild.id)).delete();
@@ -153,8 +153,8 @@ client.on("messageCreate", async (message) => {
     if (
       !checkPerms([Permissions.ADMINISTRATOR], <Member> message.member, true)
     ) {
-      const newMsg = await message.reply("You do not have the required permissions").catch((e)=>{console.log(e);return undefined});
-      setTimeout(()=>{newMsg?.delete().catch((e)=>console.log(e))}, 5*1000);
+      const newMsg = await message.reply("You do not have the required permissions").catch((e)=>{console.error(e);return undefined});
+      setTimeout(()=>{newMsg?.delete().catch((e)=>console.error(e))}, 5*1000);
     }
 
     const args = message.content.split(" ");
@@ -186,13 +186,13 @@ async function checkGuild(guild: Guild | Role) {
       Permissions.MANAGE_MESSAGES,
     ], member)
   ) {
-    const ownerDM = await client.createDM(<string> guild.ownerID).catch((e)=>{console.log(e); return undefined});
+    const ownerDM = await client.createDM(<string> guild.ownerID).catch((e)=>{console.error(e); return undefined});
 
     if(!ownerDM) return;
 
     await ownerDM.send(
       "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``",
-    ).catch((e)=>console.log(e));
-    guild.leave().catch((e)=>console.log(e));
+    ).catch((e)=>console.error(e));
+    guild.leave().catch((e)=>console.error(e));
   }
 }

@@ -55,18 +55,15 @@ async function updateDailyInfos() {
       const message = await webHookManager.getWebhookMessage(
         <string> server["daily_message_channel"],
         <string> server["daily_message_id"],
-      ).catch((e) => console.log(e));
-      
-      console.log(message);
-      
-      if (!message) return;
+      ).catch((e) => console.error(e));
 
+      if (!message) return;
 
       await webHookManager.editWebhookMessage(
         message,
         message.channelID,
         messages,
-      ).catch((e)=>console.log(e));
+      ).catch((e)=>console.error(e));
     }),
   );
 }

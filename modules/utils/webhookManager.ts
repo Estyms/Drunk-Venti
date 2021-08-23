@@ -31,9 +31,9 @@ class WebHookManagerClass {
 
   async getMessage(channelID: string, messageID: string) {
     const messagePayload = await WebHookManagerClass.restEndpoints
-      .getChannelMessage(channelID, messageID).catch((e) => console.log(e));
+      .getChannelMessage(channelID, messageID).catch((e) => console.error(e));
 
-    const textChannel = await WebHookManagerClass.client.channels.get(channelID).catch((e)=>console.log(e));
+    const textChannel = await WebHookManagerClass.client.channels.get(channelID).catch((e)=>console.error(e));
 
     if (!messagePayload || !textChannel) return null;
 
@@ -50,17 +50,17 @@ class WebHookManagerClass {
   ): Promise<WebhookPayload | undefined> {
     const avatarData = await fetchAuto(
       <string> WebHookManagerClass.client.user?.avatarURL(),
-    ).catch((e) => console.log(e));
+    ).catch((e) => console.error(e));
 
     const webhook = await this.getWebhookPayload(channelID).catch((e) =>
-      console.log(e)
+      console.error(e)
     );
     if (webhook == undefined) {
       return WebHookManagerClass.restEndpoints.createWebhook(channelID, {
         name: WebHookManagerClass.client.user?.username,
         avatar: avatarData ? avatarData : undefined,
       }).catch((e) => {
-        console.log(e);
+        console.error(e);
         return undefined;
       });
     }
@@ -73,7 +73,7 @@ class WebHookManagerClass {
   ): Promise<WebhookPayload | undefined> {
     const webhooks = await WebHookManagerClass.restEndpoints.getChannelWebhooks(
       channelID,
-    ).catch((e) => console.log(e));
+    ).catch((e) => console.error(e));
     if (webhooks == undefined) return;
     const webhookPayload = webhooks.find((c) =>
       c.user?.username == WebHookManagerClass.client.user?.username
@@ -87,12 +87,12 @@ class WebHookManagerClass {
     embeds: Embed[],
   ): Promise<{ message?: Message; success: boolean }> {
     const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
-      console.log(e)
+      console.error(e)
     );
     if (!webhookPayload) return { success: false };
     const message = await new Webhook(webhookPayload).send({
       embeds: embeds,
-    }).catch((e) => console.log(e));
+    }).catch((e) => console.error(e));
     return {
       message: message ? message : undefined,
       success: message ? true : false,
@@ -105,7 +105,7 @@ class WebHookManagerClass {
     embeds: Embed[],
   ): Promise<{ success: boolean }> {
     const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
-      console.log(e)
+      console.error(e)
     );
     if (!webhookPayload) return { success: false };
     WebHookManagerClass.restEndpoints.editWebhookMessage(
@@ -115,7 +115,7 @@ class WebHookManagerClass {
       {
         embeds: embeds,
       },
-    ).catch((e) => console.log(e));
+    ).catch((e) => console.error(e));
     return { success: true };
   }
 
@@ -123,21 +123,16 @@ class WebHookManagerClass {
     const message = await WebHookManagerClass.restEndpoints.getChannelMessage(
       channelID,
       messageID,
-    ).catch((e) => {console.log(e); return undefined});
-
-      
+    ).catch((e) => {console.error(e); return undefined});
 
     const textChannel = await WebHookManagerClass.client.channels.get(channelID)
-      .catch((e) => console.log(e));
+      .catch((e) => console.error(e));
 
     const webhookPayload = await this.getWebhookPayload(channelID).catch((e) =>
-      console.log(e)
+      console.error(e)
     );
 
-    console.log(message, textChannel, webhookPayload)
-
     if (message && textChannel && webHookManager) {
-      console.log("Exists")
       return new Message(
         WebHookManagerClass.client,
         message,

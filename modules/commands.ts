@@ -26,20 +26,20 @@ async function executeCommand(command: string, message: Message) {
     // Sets the News Channel
     case "setNewsChannel": {
       if (server["reminder_channel"] == String(message.channelID)) {
-        const newMsg = await message.reply("This channel is already the News Channel !").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("This channel is already the News Channel !").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
       if (server["daily_message_channel"] == String(message.channelID)){
-        const newMsg = await message.reply("You can't set the News Channel in the same channel as the Daily Message !").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("You can't set the News Channel in the same channel as the Daily Message !").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
@@ -47,11 +47,11 @@ async function executeCommand(command: string, message: Message) {
         news_channel: String(message.channelID),
       });
 
-      const newMsg = await message.reply("This channel is now set as the News Channel !").catch((e)=>{console.log(e); return undefined;});
+      const newMsg = await message.reply("This channel is now set as the News Channel !").catch((e)=>{console.error(e); return undefined;});
 
       if (!newMsg) return;
 
-      setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+      setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
       break;
     }
 
@@ -62,31 +62,31 @@ async function executeCommand(command: string, message: Message) {
       const args = message.content.split(" ");
 
       if (args.length < 3){
-        const newMsg = await message.reply("Please refer to ``!dv help`` for the syntax.").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("Please refer to ``!dv help`` for the syntax.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
       if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
       if (!server["news_channel"]) {
         const newMsg = await message.reply(
           "Please set News channel first with command ``!dv setNewsChannel`` !",
-        ).catch((e)=>{console.log(e); return undefined;});
+        ).catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))}, 5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))}, 5*1000);
         break;
       }
 
@@ -100,21 +100,21 @@ async function executeCommand(command: string, message: Message) {
             m["user_id"] == json["data"]["id"]
           )
         ) {
-          const newMsg = await message.reply("This account is already tracked !").catch((e)=>{console.log(e); return undefined;});
+          const newMsg = await message.reply("This account is already tracked !").catch((e)=>{console.error(e); return undefined;});
 
           if (!newMsg) return;
   
-          setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  10*1000);
+          setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  10*1000);
           return;
         }
 
         Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
           if (res["errors"]) {
-            const newMsg = await message.reply("This Account is invalid.").catch((e)=>{console.log(e); return undefined;});
+            const newMsg = await message.reply("This Account is invalid.").catch((e)=>{console.error(e); return undefined;});
 
             if (!newMsg) return;
     
-            setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  10*1000);
+            setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  10*1000);
             return;
           }
 
@@ -131,12 +131,12 @@ async function executeCommand(command: string, message: Message) {
 
           const newMsg = await message.reply(
             `Account @${json["data"]["username"]} is now tracked !`,
-          ).catch((e)=>{console.log(e); return undefined;});
+          ).catch((e)=>{console.error(e); return undefined;});
 
           if (!newMsg) return;
   
 
-          setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  10*1000);
+          setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  10*1000);
 
         });
       });
@@ -150,20 +150,20 @@ async function executeCommand(command: string, message: Message) {
       const args = message.content.split(" ");
 
       if (args.length < 3){
-        const newMsg = await message.reply("Please refer to ``!dv help`` for the syntax.").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("Please refer to ``!dv help`` for the syntax.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
       if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))}, 5*1000)
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))}, 5*1000)
         break;
       }
 
@@ -173,11 +173,11 @@ async function executeCommand(command: string, message: Message) {
             c["user_id"] === json["data"]["id"]
           )
         ) {
-          const newMsg = await message.reply("This account isn't tracked !").catch((e)=>{console.log(e); return undefined;});
+          const newMsg = await message.reply("This account isn't tracked !").catch((e)=>{console.error(e); return undefined;});
 
           if (!newMsg) return;
   
-          setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  10*1000);
+          setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  10*1000);
           return;
         }
 
@@ -194,13 +194,13 @@ async function executeCommand(command: string, message: Message) {
 
         const newMsg = await message.reply(
           `Account @${json["data"]["username"]} is no longer tracked !`,
-        ).catch((e)=>{console.log(e); return undefined;});
+        ).catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
 
         
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  10*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  10*1000);
       });
 
       break;
@@ -212,11 +212,11 @@ async function executeCommand(command: string, message: Message) {
       await webHookManager.createChannelWebhook(<string> message.channelID);
 
       if (server["news_channel"] == String(message.channelID)) {
-        const newMsg = await message.reply("You can't set the daily message in the News channel !").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("You can't set the daily message in the News channel !").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         break;
       }
 
@@ -245,20 +245,20 @@ async function executeCommand(command: string, message: Message) {
       );
 
       if (!messageData.success) {
-        const newMsg = await message.reply("An error has occured").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("An error has occured").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         return;
       }
 
       if (!messageData.message) {
-        const newMsg = await message.reply("An error has occured").catch((e)=>{console.log(e); return undefined;});
+        const newMsg = await message.reply("An error has occured").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
 
-        setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  5*1000);
+        setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  5*1000);
         return;
       }
 
@@ -285,11 +285,11 @@ async function executeCommand(command: string, message: Message) {
 \n\
 • !dv createDailyMessage : Creates the embed message for daily informations. ```\
 ",
-      ).catch((e)=>{console.log(e); return undefined;});
+      ).catch((e)=>{console.error(e); return undefined;});
 
       if (!newMsg) return;
 
-      setTimeout(()=>{newMsg.delete().catch((e)=>console.log(e)); message.delete().catch((e)=>console.log(e))},  30*1000);
+      setTimeout(()=>{newMsg.delete().catch((e)=>console.error(e)); message.delete().catch((e)=>console.error(e))},  30*1000);
 
       break;
     }
