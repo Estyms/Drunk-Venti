@@ -26,28 +26,42 @@ async function executeCommand(command: string, message: Message) {
     // Sets the News Channel
     case "setNewsChannel": {
       if (server["reminder_channel"] == String(message.channelID)) {
-        message.reply("This channel is already the News Channel !");
+        const newMsg = message.reply("This channel is already the News Channel !");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
       }
       Server.where("guild_id", String(message.guildID)).update({
         news_channel: String(message.channelID),
       });
-      message.reply("This channel is now set as the News Channel !");
+
+      const newMsg = message.reply("This channel is now set as the News Channel !");
+      setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
       break;
     }
 
     // Adds a twitter account from the news of the server
 
     case "addTwitterAccount": {
-      if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        message.reply("This is not a twitter username.");
+
+      const args = message.content.split(" ");
+
+      if (args.length < 3){
+        const newMsg = message.reply("Please refer to ``!dv help`` for the syntax.");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
+        break;
+      }
+
+      if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+        const newMsg = message.reply("This is not a twitter username.");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
       }
 
       if (!server["news_channel"]) {
-        message.reply(
+        const newMsg = message.reply(
           "Please set News channel first with command ``!dv setNewsChannel`` !",
         );
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
       }
 
@@ -61,13 +75,15 @@ async function executeCommand(command: string, message: Message) {
             m["user_id"] == json["data"]["id"]
           )
         ) {
-          message.reply("This account is already tracked !");
+          const newMsg = message.reply("This account is already tracked !");
+          setTimeout(()=>newMsg.then(msg=>{msg.delete();message.delete()}), 10*1000);
           return;
         }
 
         Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
           if (res["errors"]) {
-            message.reply("This Account is invalid.");
+            const newMsg = message.reply("This Account is invalid.");
+            setTimeout(()=>newMsg.then(msg=>{msg.delete();message.delete()}), 10*1000);
             return;
           }
 
@@ -82,9 +98,12 @@ async function executeCommand(command: string, message: Message) {
             tweetId: String(json["data"]["id"]),
           }]);
 
-          message.reply(
+          const newMsg = message.reply(
             `Account @${json["data"]["username"]} is now tracked !`,
           );
+
+          setTimeout(()=>newMsg.then(msg=>{msg.delete();message.delete()}), 10*1000);
+
         });
       });
       break;
@@ -93,8 +112,18 @@ async function executeCommand(command: string, message: Message) {
     // Remove a twitter account from the news of the server
 
     case "removeTwitterAccount": {
-      if (!message.content.split(" ")[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        message.reply("This is not a twitter username.");
+
+      const args = message.content.split(" ");
+
+      if (args.length < 3){
+        const newMsg = message.reply("Please refer to ``!dv help`` for the syntax.");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
+        break;
+      }
+
+      if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+        const newMsg = message.reply("This is not a twitter username.");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete); message.delete()}, 5*1000)
         break;
       }
 
@@ -104,7 +133,8 @@ async function executeCommand(command: string, message: Message) {
             c["user_id"] === json["data"]["id"]
           )
         ) {
-          message.reply("This account isn't tracked !");
+          const newMsg = message.reply("This account isn't tracked !");
+          setTimeout(()=>newMsg.then(msg=>{msg.delete();message.delete()}), 10*1000);
           return;
         }
 
@@ -119,9 +149,12 @@ async function executeCommand(command: string, message: Message) {
           Tweet.where("user_id", json["data"]["id"]).delete();
         }
 
-        message.reply(
+        const newMsg = message.reply(
           `Account @${json["data"]["username"]} is no longer tracked !`,
         );
+
+        
+        setTimeout(()=>newMsg.then(msg=>{msg.delete();message.delete()}), 10*1000);
       });
 
       break;
@@ -133,7 +166,8 @@ async function executeCommand(command: string, message: Message) {
       await webHookManager.createChannelWebhook(<string> message.channelID);
 
       if (server["reminder_channel"] == String(message.channelID)) {
-        message.reply("You can't set the daily message in the News channel !");
+        const newMsg = message.reply("You can't set the daily message in the News channel !");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         break;
       }
 
@@ -162,12 +196,14 @@ async function executeCommand(command: string, message: Message) {
       );
 
       if (!messageData.success) {
-        message.reply("An error has occured");
+        const newMsg = message.reply("An error has occured");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         return;
       }
 
       if (!messageData.message) {
-        message.reply("An error has occured");
+        const newMsg = message.reply("An error has occured");
+        setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 5*1000);
         return;
       }
 
@@ -176,6 +212,8 @@ async function executeCommand(command: string, message: Message) {
         daily_message_id: String(messageData.message.id),
       });
 
+
+      message.delete();
       break;
     }
 
