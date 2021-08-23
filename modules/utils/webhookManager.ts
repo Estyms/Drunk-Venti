@@ -125,7 +125,7 @@ class WebHookManagerClass {
       messageID,
     ).catch((e) => console.log(e));
 
-    if (!message) return null;
+    if (!message) return undefined;
 
     const textChannel = await WebHookManagerClass.client.channels.get(channelID)
       .catch((e) => console.log(e));

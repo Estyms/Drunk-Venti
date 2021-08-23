@@ -1,5 +1,5 @@
 import { Server } from "../mongodb.ts";
-import { client, Embed, GatewayIntents } from "../../deps.ts";
+import { client, Embed } from "../../deps.ts";
 import { getGenshinDayName } from "../utils/timeRelated.ts";
 import { dailyEvents } from "./dailyEvents.ts";
 import { webHookManager } from "../utils/webhookManager.ts";
@@ -44,8 +44,6 @@ async function updateDailyInfos() {
   // We create the embed messages
   const messages = await createDailyEmbedMessages();
 
-  console.log(dailyMessageIdList);
-
   // We remove all the servers that do not have a daily message set
   dailyMessageIdList.filter((server) =>
     server["daily_message_id"] && server["daily_message_channel"]
@@ -60,6 +58,8 @@ async function updateDailyInfos() {
       ).catch((e) => console.log(e));
 
       if (!message) return;
+
+      console.log(message);
 
       await webHookManager.editWebhookMessage(
         message,
