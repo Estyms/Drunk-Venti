@@ -1,8 +1,9 @@
-import "./deps.ts"
+import "./deps.ts";
 import { Twitter } from "./modules/twitter.ts";
 import { Tweet } from "./modules/mongodb.ts";
 import { client, cron } from "./deps.ts";
-import { ClientActivity, GatewayIntents, PermissionFlags } from "./deps.ts";
+import { ClientActivity, GatewayIntents, Member, Guild, Role } from "./deps.ts";
+import { checkPerms, Permissions } from "./modules/utils/checkPerms.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
 import { Commands } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
@@ -103,21 +104,19 @@ client.on("ready", () => {
   start();
 });
 
+client.on("guildLoaded", checkGuild)
+
+client.on("guildCreate", checkGuild);
+
+client.on("guildRoleUpdate", checkGuild)
+
 client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith("!dv")) {
-
-
-    const adminPerm = Object.values(PermissionFlags["ADMINISTRATOR"]).reduce(
-      (all, p) => BigInt(all) | BigInt(p),
-      0n
-    )
-
-    if (!message.member?.permissions.has(adminPerm, true)){
-      message.reply("You do not have the required permissions to use this bot.");
-      return
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member> message.member, true)) {
+      console.log(message.member?.permissions.toJSON())
+      return message.reply("You do not have the required permissions");
     }
-
 
     const args = message.content.split(" ");
     Commands(args[1], message);
@@ -131,3 +130,27 @@ client.connect(Deno.env.get("DISCORD_TOKEN"), [
   GatewayIntents.GUILD_WEBHOOKS,
   GatewayIntents.GUILD_INTEGRATIONS,
 ]);
+
+
+async function checkGuild(guild: Guild | Role) {
+  if (guild instanceof Role) guild = guild.guild;
+  const member = await guild.me();
+
+  if (
+    !checkPerms([
+      Permissions.MANAGE_WEBHOOKS,
+      Permissions.SEND_MESSAGES,
+      Permissions.READ_MESSAGE_HISTORY,
+      Permissions.EMBED_LINKS,
+      Permissions.ATTACH_FILES,
+      Permissions.USE_SLASH_COMMANDS,
+    ], member)
+  ) {
+    const ownerDM = await client.createDM(<string> guild.ownerID);
+
+    await ownerDM.send(
+      "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``",
+    );
+    guild.leave();
+  }
+}

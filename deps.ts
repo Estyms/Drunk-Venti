@@ -9,7 +9,9 @@ export {
   RESTManager,
   User,
   Webhook,
-  PermissionFlags
+  PermissionFlags,
+  Guild,
+  Role
 } from "https://deno.land/x/harmony@v2.0.0/mod.ts";
 export type {
   Client,
@@ -18,7 +20,8 @@ export type {
   EmbedPayload,
   TextChannel,
   UserPayload,
-  WebhookPayload
+  WebhookPayload,
+  Member
 } from "https://deno.land/x/harmony@v2.0.0/mod.ts";
 const client = new Client();
 export { client };
