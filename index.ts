@@ -143,6 +143,8 @@ async function checkGuild(guild: Guild | Role) {
       Permissions.EMBED_LINKS,
       Permissions.ATTACH_FILES,
       Permissions.USE_SLASH_COMMANDS,
+      Permissions.VIEW_CHANNEL,
+      Permissions.MANAGE_MESSAGES
     ], member)
   ) {
     const ownerDM = await client.createDM(<string> guild.ownerID);
