@@ -44,6 +44,8 @@ async function updateDailyInfos() {
   // We create the embed messages
   const messages = await createDailyEmbedMessages();
 
+  console.log(messages);
+
   // We remove all the servers that do not have a daily message set
   dailyMessageIdList.filter((server) =>
     server["daily_message_id"] && server["daily_message_channel"]
