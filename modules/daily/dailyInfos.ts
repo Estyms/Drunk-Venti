@@ -10,7 +10,7 @@ import { webHookManager } from "../utils/webhookManager.ts";
 async function createDailyEmbedMessages(): Promise<Embed[]> {
   const messages = await dailyEvents.createEmbedEvents();
 
-  const message: Embed = new Date().getDay() != 0
+  const message: Embed = getGenshinDayName() != "sunday"
     ? new Embed({
       title: "Todays Farmable Objects",
       image: {
