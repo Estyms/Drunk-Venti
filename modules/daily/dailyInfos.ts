@@ -36,6 +36,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 async function updateDailyInfos() {
   // We get all the daily messages to update from all server
   const dailyMessageIdList = await Server.select(
+    "guild_id",
     "daily_message_id",
     "daily_message_channel",
   ).all();
@@ -43,16 +44,20 @@ async function updateDailyInfos() {
   // We create the embed messages
   const messages = await createDailyEmbedMessages();
 
+
   // We remove all the servers that do not have a daily message set
   dailyMessageIdList.filter((server) =>
     server["daily_message_id"] && server["daily_message_channel"]
   ).forEach(
     (async (server) => {
+      if (await client.guilds.get(<string> server["guild_id"]) == undefined) return;
       try {
       const message = await webHookManager.getWebhookMessage(
         <string> server["daily_message_channel"],
         <string> server["daily_message_id"],
       );
+
+      if (!message) return;
 
       if (
         !(await webHookManager.editWebhookMessage(

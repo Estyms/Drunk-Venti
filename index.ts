@@ -1,8 +1,14 @@
 import "./deps.ts";
 import { Twitter } from "./modules/twitter.ts";
-import { Tweet } from "./modules/mongodb.ts";
+import { Server, Tweet } from "./modules/mongodb.ts";
 import { client, cron } from "./deps.ts";
-import { ClientActivity, GatewayIntents, Member, Guild, Role } from "./deps.ts";
+import {
+  ClientActivity,
+  GatewayIntents,
+  Guild,
+  Member,
+  Role,
+} from "./deps.ts";
 import { checkPerms, Permissions } from "./modules/utils/checkPerms.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
 import { Commands } from "./modules/commands.ts";
@@ -31,16 +37,22 @@ async function checkTweets() {
         return;
       }
 
-      // Update Tweet object with the latest tweet id
-      Tweet.where("user_id", String(tweet["user_id"])).update({
-        tweet_id: json["data"][0]["id"],
-        tweet_text: json["data"][0]["text"],
-      });
-
       // Gets all servers that uses this tweet
       Tweet.servers(json["data"]["id"]).then((serverList) => {
         // Itterate over all servers
-        serverList.forEach((server) => {
+        serverList.forEach(async (server) => {
+          if (
+            await client.guilds.get(<string> server["guild_id"]) === undefined
+          ) {
+            return;
+          }
+
+          // Update Tweet object with the latest tweet id
+          Tweet.where("user_id", String(tweet["user_id"])).update({
+            tweet_id: json["data"][0]["id"],
+            tweet_text: json["data"][0]["text"],
+          });
+
           // Send tweet in news channel
           Twitter.getUsername(String(tweet["user_id"])).then((userJSON) => {
             postMessage(
@@ -104,16 +116,40 @@ client.on("ready", () => {
   start();
 });
 
-client.on("guildLoaded", checkGuild)
+client.on("guildLoaded", checkGuild);
 
-client.on("guildCreate", checkGuild);
+client.on("guildCreate", async (guild) => {
+  checkGuild(guild);
+  const server = await Server.where("guild_id", String(guild.id)).first();
+  const message = await webHookManager.getMessage(
+    <string> server["daily_message_channel"],
+    <string> server["daily_message_id"],
+  )
 
-client.on("guildRoleUpdate", checkGuild)
+  if (message) message.delete();
+
+  
+  Server.where("guild_id", String(guild.id)).delete();
+  Server.create(
+    server["news_channel"]
+      ? [{
+        guild_id: String(guild.id),
+        news_channel: <string> server["news_channel"],
+      }]
+      : [{
+        guild_id: String(guild.id),
+      }],
+  );
+});
+
+client.on("guildRoleUpdate", checkGuild);
 
 client.on("messageCreate", (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith("!dv")) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member> message.member, true)) {
+    if (
+      !checkPerms([Permissions.ADMINISTRATOR], <Member> message.member, true)
+    ) {
       return message.reply("You do not have the required permissions");
     }
 
@@ -130,7 +166,6 @@ client.connect(Deno.env.get("DISCORD_TOKEN"), [
   GatewayIntents.GUILD_INTEGRATIONS,
 ]);
 
-
 async function checkGuild(guild: Guild | Role) {
   if (guild instanceof Role) guild = guild.guild;
   const member = await guild.me();
@@ -144,7 +179,7 @@ async function checkGuild(guild: Guild | Role) {
       Permissions.ATTACH_FILES,
       Permissions.USE_SLASH_COMMANDS,
       Permissions.VIEW_CHANNEL,
-      Permissions.MANAGE_MESSAGES
+      Permissions.MANAGE_MESSAGES,
     ], member)
   ) {
     const ownerDM = await client.createDM(<string> guild.ownerID);

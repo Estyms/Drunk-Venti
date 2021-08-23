@@ -11,14 +11,14 @@ export {
   Webhook,
   PermissionFlags,
   Guild,
-  Role
+  Role,
+  TextChannel
 } from "https://deno.land/x/harmony@v2.0.0/mod.ts";
 export type {
   Client,
   ClientActivity,
   EmbedField,
   EmbedPayload,
-  TextChannel,
   UserPayload,
   WebhookPayload,
   Member

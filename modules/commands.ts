@@ -139,10 +139,11 @@ async function executeCommand(command: string, message: Message) {
 
       if (server["daily_message_id"]) {
         try {
-          (await webHookManager.getWebhookMessage(
+          const message = await webHookManager.getWebhookMessage(
             <string> server["daily_message_channel"],
             <string> server["daily_message_id"],
-          )).delete();
+          )
+          if (message) message.delete();
         } catch {
           "";
         }

@@ -29,6 +29,15 @@ class WebHookManagerClass {
     WebHookManagerClass.client = client;
   }
 
+  async getMessage(channelID: string, messageID:string){
+    try {
+      const messagePayload =  await WebHookManagerClass.restEndpoints.getChannelMessage(channelID, messageID);
+      return new Message(WebHookManagerClass.client, messagePayload, <TextChannel> await WebHookManagerClass.client.channels.get(channelID), new User(WebHookManagerClass.client, messagePayload.author));
+    } catch {
+      return null;
+    }
+  }
+
   async createChannelWebhook(channelID: string): Promise<WebhookPayload> {
     const avatarData = await fetchAuto(
       <string> WebHookManagerClass.client.user?.avatarURL(),
@@ -63,6 +72,7 @@ class WebHookManagerClass {
     channelID: string,
     embeds: Embed[],
   ): Promise<{ message?: Message; success: boolean }> {
+    console.log(embeds)
     const webhookPayload = await this.getWebhookPayload(channelID);
     if (!webhookPayload) return { success: false };
     const message = await new Webhook(webhookPayload).send({
@@ -90,6 +100,7 @@ class WebHookManagerClass {
   }
 
   async getWebhookMessage(channelID: string, messageID: string) {
+    try {
     const message = await WebHookManagerClass.restEndpoints.getChannelMessage(
       channelID,
       messageID,
@@ -103,6 +114,9 @@ class WebHookManagerClass {
         <UserPayload> (await this.getWebhookPayload(channelID))?.user,
       ),
     );
+    } catch {
+      return null;
+    }
   }
 }
 

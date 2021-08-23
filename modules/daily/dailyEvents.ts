@@ -164,7 +164,7 @@ class dailyEvents {
       parseTime(EventData.upcomming.start).valueOf() < nextUpdate.valueOf()
         ? new Embed({
           title: "SOON : " + EventData.upcomming.name,
-          url: EventData.upcomming.url + "?".repeat(EmbedMessages.length) || undefined,
+          url: EventData.upcomming.url ? EventData.upcomming.url + "?".repeat(EmbedMessages.length) : undefined,
           image: EventData.upcomming.image
             ? {
               url:
