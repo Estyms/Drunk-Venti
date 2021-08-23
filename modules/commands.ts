@@ -225,7 +225,7 @@ async function executeCommand(command: string, message: Message) {
     }
 
     case "help": {
-      message.reply(
+      const newMsg = message.reply(
 " Here are the commands !\
             ```• !dv help : Displays available commands.\n\
 \n\
@@ -238,6 +238,8 @@ async function executeCommand(command: string, message: Message) {
 • !dv createDailyMessage : Creates the embed message for daily informations. ```\
 ",
       );
+      setTimeout(()=>{newMsg.then((msg)=>msg.delete()); message.delete()}, 30*1000);
+
       break;
     }
 
