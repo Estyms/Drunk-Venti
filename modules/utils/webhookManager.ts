@@ -123,9 +123,9 @@ class WebHookManagerClass {
     const message = await WebHookManagerClass.restEndpoints.getChannelMessage(
       channelID,
       messageID,
-    ).catch((e) => console.log(e));
+    ).catch((e) => {console.log(e); return undefined});
 
-    if (!message) return undefined;
+      
 
     const textChannel = await WebHookManagerClass.client.channels.get(channelID)
       .catch((e) => console.log(e));
@@ -134,7 +134,9 @@ class WebHookManagerClass {
       console.log(e)
     );
 
-    if (!textChannel || !webHookManager) {
+    console.log(message, textChannel, webhookPayload)
+
+    if (message && textChannel && webHookManager) {
       console.log("Exists")
       return new Message(
         WebHookManagerClass.client,
