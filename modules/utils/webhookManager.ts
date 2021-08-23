@@ -72,7 +72,6 @@ class WebHookManagerClass {
     channelID: string,
     embeds: Embed[],
   ): Promise<{ message?: Message; success: boolean }> {
-    console.log(embeds)
     const webhookPayload = await this.getWebhookPayload(channelID);
     if (!webhookPayload) return { success: false };
     const message = await new Webhook(webhookPayload).send({

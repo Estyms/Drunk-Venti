@@ -143,7 +143,11 @@ async function executeCommand(command: string, message: Message) {
             <string> server["daily_message_channel"],
             <string> server["daily_message_id"],
           )
-          if (message) message.delete();
+          if (message) {
+            console.log(message.guild?.name)
+            message.delete();
+          
+          }
         } catch {
           "";
         }
@@ -168,7 +172,10 @@ async function executeCommand(command: string, message: Message) {
         return;
       }
 
-      Server.where("guild_id", <string> messageData.message.guildID).update({
+      console.log(message.guildID);
+      console.log(await Server.where("guild_id", <string> message.guildID).all())
+
+      Server.where("guild_id", <string> message.guildID).update({
         daily_message_channel: String(messageData.message.channelID),
         daily_message_id: String(messageData.message.id),
       });
