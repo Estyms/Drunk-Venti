@@ -46,8 +46,11 @@ async function checkTweets() {
       }
 
       // Gets all servers that uses this tweet
-      Tweet.servers(json["data"]["id"]).then((serverList) => {
+      Tweet.servers(String(tweet["user_id"])).then((serverList) => {
         // Itterate over all servers
+
+        console.log(serverList, json);
+
         serverList.forEach(async (server) => {
           if (
             await client.guilds.get(<string> server["guild_id"]) === undefined
