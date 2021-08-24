@@ -21,7 +21,7 @@ class twitter {
         headers: headers,
       },
     )
-    try {return JSON.parse(await request.text())} catch { return undefined };
+    try {return JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
   }
 
   /**
@@ -33,7 +33,7 @@ class twitter {
       method: "GET",
       headers: headers,
     });
-    try {return JSON.parse(await request.text())} catch {return undefined};
+    try {return JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
   }
 
   /**
@@ -45,7 +45,7 @@ class twitter {
       method: "GET",
       headers: headers,
     });
-    try {JSON.parse(await request.text())} catch{ return undefined };
+    try {JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
   }
 
   /**
@@ -57,7 +57,7 @@ class twitter {
       method: "GET",
       headers: headers,
     });
-    try {JSON.parse(await request.text())} catch{ return undefined };
+    try {JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
   }
 }
 
