@@ -70,7 +70,7 @@ async function executeCommand(command: string, message: Message) {
         break;
       }
 
-      if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+      if (!args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
         const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
@@ -158,7 +158,7 @@ async function executeCommand(command: string, message: Message) {
         break;
       }
 
-      if (args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
+      if (!args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
         const newMsg = await message.reply("This is not a twitter username.").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
