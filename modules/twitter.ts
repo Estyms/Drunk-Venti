@@ -20,8 +20,14 @@ class twitter {
         method: "GET",
         headers: headers,
       },
-    )
-    try {return JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
+    );
+
+    try {
+      return JSON.parse(await request.text());
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
   }
 
   /**
@@ -29,11 +35,20 @@ class twitter {
 	 * @param username username of the twitter user
 	 */
   async getUserId(username: string): Promise<Record<string, any> | undefined> {
-    const request = await fetch(`https://api.twitter.com/2/users/by/username/${username}`, {
-      method: "GET",
-      headers: headers,
-    });
-    try {return JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
+    const request = await fetch(
+      `https://api.twitter.com/2/users/by/username/${username}`,
+      {
+        method: "GET",
+        headers: headers,
+      },
+    );
+
+    try {
+      return JSON.parse(await request.text());
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
   }
 
   /**
@@ -45,7 +60,13 @@ class twitter {
       method: "GET",
       headers: headers,
     });
-    try {JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
+
+    try {
+      return JSON.parse(await request.text());
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
   }
 
   /**
@@ -57,7 +78,13 @@ class twitter {
       method: "GET",
       headers: headers,
     });
-    try {JSON.parse(await request.text())} catch(e) { console.error(e); return undefined};
+
+    try {
+      return JSON.parse(await request.text());
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
   }
 }
 

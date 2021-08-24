@@ -51,12 +51,6 @@ async function checkTweets() {
             return;
           }
 
-          // Update Tweet object with the latest tweet id
-          Tweet.where("user_id", String(tweet["user_id"])).update({
-            tweet_id: json["data"][0]["id"],
-            tweet_text: json["data"][0]["text"],
-          });
-
           // Send tweet in news channel
           Twitter.getUsername(String(tweet["user_id"])).then((userJSON) => {
 
@@ -71,6 +65,12 @@ async function checkTweets() {
                 json["data"][0]["id"]
               }`,
             );
+
+            // Update Tweet object with the latest tweet id
+            Tweet.where("user_id", String(tweet["user_id"])).update({
+              tweet_id: json["data"][0]["id"],
+              tweet_text: json["data"][0]["text"],
+            });
           });
         });
       });
