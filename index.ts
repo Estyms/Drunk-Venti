@@ -36,7 +36,12 @@ async function checkTweets() {
       }
 
       // If the latest tweet is already the latest sent, skip
-      if (json["data"][0]["id"] == tweet["tweet_id"]) {
+      try {
+        if (json["data"][0]["id"] == tweet["tweet_id"]) {
+          return;
+        }
+      } catch {
+        console.error("No data")
         return;
       }
 
