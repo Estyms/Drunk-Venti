@@ -52,12 +52,12 @@ class twitter {
 	 * Gets a tweet from its ID
 	 * @param id ID of the tweet you want to get
 	 */
-  getTweetById(id: string): Promise<Record<string, any>> {
-    return fetch(`https://api.twitter.com/2/tweets/${id}`, {
+  async getTweetById(id: string): Promise<Record<string, any> | undefined> {
+    const request = await fetch(`https://api.twitter.com/2/tweets/${id}`, {
       method: "GET",
       headers: headers,
-    })
-      .then(async (res) => <Record<string, any>> JSON.parse(await res.text()));
+    });
+    try {JSON.parse(await request.text())} catch{ return undefined };
   }
 }
 

@@ -30,7 +30,10 @@ async function checkTweets() {
     // Gets updated tweet
     Twitter.getUserTweets(String(tweet["user_id"])).then((json) => {
       // If an error has occured skip
-      if (!json || json["errors"]) return;
+      if (!json || json["errors"]) {
+        console.error("json is undefined");
+        return;
+      }
 
       // If the latest tweet is already the latest sent, skip
       if (json["data"][0]["id"] == tweet["tweet_id"]) {
@@ -44,6 +47,7 @@ async function checkTweets() {
           if (
             await client.guilds.get(<string> server["guild_id"]) === undefined
           ) {
+            console.error("Bot not in guild");
             return;
           }
 
@@ -56,7 +60,10 @@ async function checkTweets() {
           // Send tweet in news channel
           Twitter.getUsername(String(tweet["user_id"])).then((userJSON) => {
 
-            if (!userJSON) return;
+            if (!userJSON){
+              console.error("userJSON undefined");
+              return;
+            } 
 
             postMessage(
               String(server["news_channel"]),
@@ -101,6 +108,19 @@ function start() {
   cron("0/5 * * * *", () => {
     updateDailyInfos();
   });
+
+  cron("0/5 * * * *", () => {
+    if (!client.gateway.connected) {
+      client.connect(Deno.env.get("DISCORD_TOKEN"), [
+        GatewayIntents.GUILDS,
+        GatewayIntents.GUILD_MESSAGES,
+        GatewayIntents.GUILD_EMOJIS,
+        GatewayIntents.GUILD_WEBHOOKS,
+        GatewayIntents.GUILD_INTEGRATIONS,
+      ]);
+    }
+  })
+
 }
 
 client.on("ready", () => {
