@@ -25,7 +25,7 @@ async function executeCommand(command: string, message: Message) {
   switch (command) {
     // Sets the News Channel
     case "setNewsChannel": {
-      if (server["reminder_channel"] == String(message.channelID)) {
+      if (server["news_channel"] == String(message.channelID)) {
         const newMsg = await message.reply("This channel is already the News Channel !").catch((e)=>{console.error(e); return undefined;});
 
         if (!newMsg) return;
