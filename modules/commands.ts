@@ -91,7 +91,7 @@ async function executeCommand(command: string, message: Message) {
       }
 
       Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
-        if (json["errors"]) {
+        if (!json || json["errors"]) {
           return;
         }
 
@@ -109,7 +109,7 @@ async function executeCommand(command: string, message: Message) {
         }
 
         Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
-          if (res["errors"]) {
+          if (!res || res["errors"]) {
             const newMsg = await message.reply("This Account is invalid.").catch((e)=>{console.error(e); return undefined;});
 
             if (!newMsg) return;
@@ -168,6 +168,9 @@ async function executeCommand(command: string, message: Message) {
       }
 
       Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
+
+        if (!json) return;
+
         if (
           !(await Server.tweets(String(message.guildID))).find((c) =>
             c["user_id"] === json["data"]["id"]

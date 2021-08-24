@@ -30,7 +30,7 @@ async function checkTweets() {
     // Gets updated tweet
     Twitter.getUserTweets(String(tweet["user_id"])).then((json) => {
       // If an error has occured skip
-      if (json["errors"]) return;
+      if (!json || json["errors"]) return;
 
       // If the latest tweet is already the latest sent, skip
       if (json["data"][0]["id"] == tweet["tweet_id"]) {
@@ -55,6 +55,9 @@ async function checkTweets() {
 
           // Send tweet in news channel
           Twitter.getUsername(String(tweet["user_id"])).then((userJSON) => {
+
+            if (!userJSON) return;
+
             postMessage(
               String(server["news_channel"]),
               `https://twitter.com/${userJSON["data"]["username"]}/status/${

@@ -13,39 +13,39 @@ class twitter {
 	 * Gets the tweets of a twitter user from its ID
 	 * @param id ID of the twitter user
 	 */
-  getUserTweets(id: string): Promise<Record<string, any>> {
-    return fetch(
+  async getUserTweets(id: string): Promise<Record<string, any> | undefined> {
+    const request = await fetch(
       `https://api.twitter.com/2/users/${id}/tweets?exclude=retweets,replies&max_results=5`,
       {
         method: "GET",
         headers: headers,
       },
     )
-      .then(async (res) => <Record<string, any>> JSON.parse(await res.text()));
+    try {return JSON.parse(await request.text())} catch { return undefined };
   }
 
   /**
 	 * Gets the ID of a twitter user from its username
 	 * @param username username of the twitter user
 	 */
-  getUserId(username: string): Promise<Record<string, any>> {
-    return fetch(`https://api.twitter.com/2/users/by/username/${username}`, {
+  async getUserId(username: string): Promise<Record<string, any> | undefined> {
+    const request = await fetch(`https://api.twitter.com/2/users/by/username/${username}`, {
       method: "GET",
       headers: headers,
-    })
-      .then(async (res) => <Record<string, any>> JSON.parse(await res.text()));
+    });
+    try {return JSON.parse(await request.text())} catch {return undefined};
   }
 
   /**
 	 * Gets the username of a user from its ID
 	 * @param id ID of the twitter user
 	 */
-  getUsername(id: string): Promise<Record<string, any>> {
-    return fetch(`https://api.twitter.com/2/users/${id}`, {
+  async getUsername(id: string): Promise<Record<string, any> | undefined> {
+    const request = await fetch(`https://api.twitter.com/2/users/${id}`, {
       method: "GET",
       headers: headers,
-    })
-      .then(async (res) => <Record<string, any>> JSON.parse(await res.text()));
+    });
+    try {JSON.parse(await request.text())} catch{ return undefined };
   }
 
   /**
