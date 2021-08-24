@@ -35,7 +35,7 @@ async function checkTweets() {
         return;
       }
 
-      console.log(json)
+      if (json["meta"]["result_count"] == 0) return;
 
       // If the latest tweet is already the latest sent, skip
       try {
@@ -44,7 +44,6 @@ async function checkTweets() {
         }
       } catch {
         console.error("No data")
-        Tweet.where({user_id: String(tweet["user_id"])}).delete();
         return;
       }
 
