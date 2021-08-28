@@ -11,6 +11,8 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/estyms/drunk-venti/badge)](https://www.codefactor.io/repository/github/estyms/drunk-venti) 
 
 Drunk Venti is a Discord bot coded in Typescript based on [Harmony](https://harmony.mod.land/) designed to provide informations for [Genshin Impact](https://genshin.mihoyo.com/fr/home).
+
+All of the informations used currently are fetched from the [paimon.moe](https://github.com/MadeBaruna/paimon-moe) repository.
   
 
 ## Commands 
