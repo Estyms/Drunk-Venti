@@ -63,7 +63,7 @@ export class DrunkVenti extends Client {
 
     for (let i = 0; i < commands.length; i++) {
       try {
-        await this.interactions.commands.create(commands[i]);
+        await this.interactions.commands.create(commands[i], guild);
       } catch (_){
         return false;
       }
