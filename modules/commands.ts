@@ -1,8 +1,205 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
 import { createDailyEmbedMessages } from "./daily/dailyInfos.ts";
-import { client, Message, TextChannel } from "../deps.ts";
+import { Message, InteractionResponseFlags, SlashCommandOptionType, SlashCommandPartial, Interaction, Embed, InteractionApplicationCommandData, InteractionChannel } from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
+
+
+// Every command descriptions
+export const commands: SlashCommandPartial[] = [
+  {
+    name: "setnewschannel",
+    description: "Set a channel as the news channel.",
+    options: [
+      {
+        name: "channel",
+        description: "Channel to set as the news channel.",
+        type: SlashCommandOptionType.CHANNEL,
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: "createstatusmessage",
+    description: "Create a status message in a channel.",
+    options: [
+      {
+        name: "channel",
+        description: "Channel where the status message will be created.",
+        type: SlashCommandOptionType.CHANNEL,
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: "addtwitteraccount",
+    description: "Adds a twitter account to the news channel feed.",
+    options: [
+      {
+        name: "account",
+        description: "Twitter account to add.",
+        type: SlashCommandOptionType.STRING,
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: "removetwitteraccount",
+    description: "Removes a twitter account from the news channel feed.",
+    options: [
+      {
+        name: "account",
+        description: "Twitter account to remove.",
+        type: SlashCommandOptionType.STRING,
+        required: true
+      }
+    ]
+  }
+]
+
+
+
+
+
+export async function createStatusMessage(interaction: Interaction) {
+
+  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
+
+  const options = <InteractionApplicationCommandData>interaction.data;
+
+  let channel = options.options.find(e => e.name == "channel")
+
+  if (!channel) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: "Channel not provided",
+          color: 0xff0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  await webHookManager.createChannelWebhook(<string>channel.value);
+
+  if (server["news_channel"] == String(channel.value)){
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Create Status Message",
+          description: `<#${channel.value}> is already the News Channel.`,
+          color: 0x00FFFF,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  // If the message already exists, delete it
+  if (server["daily_message_id"]) {
+    try {
+      const message = await webHookManager.getWebhookMessage(
+        <string>server["daily_message_channel"],
+        <string>server["daily_message_id"],
+      );
+      if (message) {
+        message.delete();
+      }
+    } catch {
+      "";
+    }
+  }
+
+  const client = await interaction.guild?.me()
+
+  if (!client){
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: `Critical bug guild.me doesn't exists`,
+          color: 0xFF0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+
+  const resolvedChannels = options.resolved?.channels;
+  if (!resolvedChannels) return;
+
+  const dailyMessageChannel = resolvedChannels[channel.value];
+
+
+  const messageData = await webHookManager.sendWebhookMessage(
+    dailyMessageChannel.id,
+    await createDailyEmbedMessages(),
+  );
+
+  if (!messageData.success) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: `Critical bug messageData.success isn't true`,
+          color: 0xFF0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  if (!messageData.message) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: `Critical bug messageData.message doesn't exists`,
+          color: 0xFF0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  Server.where("guild_id", <string>interaction.guild?.id || "").update({
+    daily_message_channel: String(messageData.message.channelID),
+    daily_message_id: String(messageData.message.id),
+  });
+  
+  interaction.respond({
+    embeds: [
+      new Embed({
+        title: "Create Status Message",
+        description: `Status Message created successfully`,
+        color: 0x00FF00,
+        footer: { text: interaction.client.user?.username || "Drunk Venti" },
+      })
+    ],
+    flags: InteractionResponseFlags.EPHEMERAL
+  })
+
+}
+
+
+
+
 
 /**
  * Executes a command
@@ -299,120 +496,11 @@ async function executeCommand(command: string, message: Message) {
     // Creates the Daily Message
 
     case "createDailyMessage": {
-      await webHookManager.createChannelWebhook(<string> message.channelID);
 
-      if (server["news_channel"] == String(message.channelID)) {
-        const newMsg = await message.reply(
-          "You can't set the daily message in the News channel !",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      if (server["daily_message_id"]) {
-        try {
-          const message = await webHookManager.getWebhookMessage(
-            <string> server["daily_message_channel"],
-            <string> server["daily_message_id"],
-          );
-          if (message) {
-            message.delete();
-          }
-        } catch {
-          "";
-        }
-      }
-
-      const dailyMessageChannel = <TextChannel> await client.channels.get(
-        String(message.channelID),
-      );
-
-      const messageData = await webHookManager.sendWebhookMessage(
-        dailyMessageChannel.id,
-        await createDailyEmbedMessages(),
-      );
-
-      if (!messageData.success) {
-        const newMsg = await message.reply("An error has occured").catch(
-          (e) => {
-            console.error(e);
-            return undefined;
-          },
-        );
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        return;
-      }
-
-      if (!messageData.message) {
-        const newMsg = await message.reply("An error has occured").catch(
-          (e) => {
-            console.error(e);
-            return undefined;
-          },
-        );
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        return;
-      }
-
-      Server.where("guild_id", <string> message.guildID).update({
-        daily_message_channel: String(messageData.message.channelID),
-        daily_message_id: String(messageData.message.id),
-      });
-
-      message.delete();
-      break;
-    }
-
-    case "help": {
-      const newMsg = await message.reply(
-" Here are the commands !\
-            ```• !dv help : Displays available commands.\n\
-\n\
-• !dv setNewsChannel : Sets current channel as the News Channel.\n\
-\n\
-• !dv addTwitterAccount [twitterAccount] : Adds twitterAccount to track list.\n\
-\n\
-• !dv removeTwitterAccount [twitterAccount] : Removes twitter Account from track list.\n\
-\n\
-• !dv createDailyMessage : Creates the embed message for daily informations. ```\
-",
-      ).catch((e) => {
-        console.error(e);
-        return undefined;
-      });
-
-      if (!newMsg) return;
-
-      setTimeout(() => {
-        newMsg.delete().catch((e) => console.error(e));
-        message.delete().catch((e) => console.error(e));
-      }, 30 * 1000);
-
-      break;
     }
 
     default:
+      break;
   }
 }
 

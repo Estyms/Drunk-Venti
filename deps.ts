@@ -1,5 +1,4 @@
 import "https://deno.land/x/dotenv@v3.0.0/load.ts";
-import { Client } from "https://deno.land/x/harmony@v2.0.0/mod.ts";
 export {
   Embed,
   GatewayIntents,
@@ -12,19 +11,27 @@ export {
   PermissionFlags,
   Guild,
   Role,
-  TextChannel
-} from "https://deno.land/x/harmony@v2.0.0/mod.ts";
-export type {
+  TextChannel,
   Client,
+  event,
+  SlashCommandOptionType,
+  slash,
+  InteractionChannel,
+  InteractionResponseFlags
+} from "https://deno.land/x/harmony@v2.2.0/mod.ts";
+export type {
   ClientActivity,
   EmbedField,
   EmbedPayload,
   UserPayload,
   WebhookPayload,
-  Member
-} from "https://deno.land/x/harmony@v2.0.0/mod.ts";
-const client = new Client();
-export { client };
+  Member,
+  SlashCommandPartial,
+  Interaction,
+  InteractionType,
+  InteractionApplicationCommandData,
+  
+} from "https://deno.land/x/harmony@v2.2.0/mod.ts";
 
 export {
   Database,

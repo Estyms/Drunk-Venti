@@ -1,5 +1,6 @@
 import { Server } from "../mongodb.ts";
-import { client, Embed } from "../../deps.ts";
+import { Embed } from "../../deps.ts";
+import { DrunkVenti } from "../../index.ts"
 import { getGenshinDayName } from "../utils/timeRelated.ts";
 import { dailyEvents } from "./dailyEvents.ts";
 import { webHookManager } from "../utils/webhookManager.ts";
@@ -33,7 +34,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 /**
  * Updates the daily info messages from all servers
  */
-async function updateDailyInfos() {
+async function updateDailyInfos(client : DrunkVenti) {
   // We get all the daily messages to update from all server
   const dailyMessageIdList = await Server.select(
     "guild_id",

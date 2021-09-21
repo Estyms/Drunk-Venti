@@ -1,7 +1,22 @@
+import daysjs from "https://deno.land/x/dayjs@v1.10.7/types/index.d.ts"
+import utc from "https://deno.land/x/dayjs@v1.10.7/types/plugin/utc.d.ts"
+import timezone from 'https://deno.land/x/dayjs@v1.10.7/types/plugin/timezone.d.ts'; 
+
 interface timeInfo {
   remainingDays: number;
   remainingHours: number;
   remainingMinutes: number;
+}
+
+const timeOffset = {
+  Asia: 8,
+  America: -5,
+  Europe: 1,
+};
+
+function initServer(){
+  const now = utc();
+  now.utcOffset(timeOffset.Europe)
 }
 
 /**
