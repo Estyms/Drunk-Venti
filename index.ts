@@ -67,6 +67,7 @@ export class DrunkVenti extends Client {
       try {
         await this.interactions.commands.create(command, guild);
       } catch (_e) {
+        console.log("ERROR");
         errored = true;
       }
     })
