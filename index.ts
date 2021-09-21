@@ -59,12 +59,17 @@ export class DrunkVenti extends Client {
   }
 
   // Setups the commands
-  async createCommands(guild: Guild) {
+  async createCommands(guild: Guild | undefined) {
 
     for (let i = 0; i < commands.length; i++) {
       try {
-        await this.interactions.commands.create(commands[i], guild);
-      } catch (_){
+        if (guild) {
+          await this.interactions.commands.create(commands[i], guild)
+        } else {
+          await this.interactions.commands.create(commands[i])
+        }
+      } catch (e){
+        console.error(e);
         return true;
       }
     }
@@ -197,6 +202,7 @@ export class DrunkVenti extends Client {
   @event("ready")
   ready() {
     console.log("Bot Ready !");
+    this.createCommands(undefined);
     const activity: ClientActivity = {
       status: "online",
       since: 0,
@@ -232,9 +238,10 @@ export class DrunkVenti extends Client {
 
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
-      this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym."))
-      guild.leave();
-      return;
+      try {
+        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(()=>guild.leave()))
+        } catch(_){/** */}
+        return;
     }
 
 
