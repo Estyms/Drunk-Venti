@@ -1,5 +1,5 @@
 import { jsObjectFileToJson } from "../utils/jsObjectParser.ts";
-import { getGenshinDayName } from "../utils/timeRelated.ts";
+import { getGenshinDayName, GenshinServer } from "../utils/timeRelated.ts";
 
 interface ItemDict {
   [index: string]: Item;
@@ -39,7 +39,7 @@ async function getDailyFarmableItems(): Promise<FarmableItem[]> {
     itemList[key]
   ) as FarmableItem[];
   const dailyFarmableItems: FarmableItem[] = farmableItems.filter((x) =>
-    x.day.includes(getGenshinDayName())
+    x.day.includes(getGenshinDayName(GenshinServer.Europe))
   );
   return dailyFarmableItems;
 }

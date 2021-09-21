@@ -14,7 +14,7 @@ import {
 } from "./deps.ts";
 import { checkPerms, Permissions } from "./modules/utils/checkPerms.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
-import { commands, createStatusMessage } from "./modules/commands.ts";
+import { commands, createStatusMessage, addTwitterAccount, removeTwitterAccount, setNewsChannel } from "./modules/commands.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
 
@@ -191,7 +191,7 @@ export class DrunkVenti extends Client {
     this.checkGuild(guild);
     try {
       this.createCommands(guild);
-    } catch (e){
+    } catch (_e){
       console.log(`Quitting ${guild.name}`);
       this.createDM(guild.ownerID || "").then((x)=> x.send("Please add back the bot with the updated permission !"))
       guild.leave();
@@ -204,7 +204,7 @@ export class DrunkVenti extends Client {
 
     try {
       this.createCommands(guild);
-    } catch (e){
+    } catch (_e){
       console.log(`Quitting ${guild.name}`);
       this.createDM(guild.ownerID || "").then((x)=> x.send("Please add back the bot with the updated permission !"))
       guild.leave();
@@ -248,17 +248,17 @@ export class DrunkVenti extends Client {
 
   @slash("addtwitteraccount")
   ATA(interaction: Interaction) {
-    interaction.reply("ATA")
+    addTwitterAccount(interaction);
   }
 
   @slash("removetwitteraccount")
   RTA(interaction: Interaction) {
-    interaction.reply("RTA")
+    removeTwitterAccount(interaction);
   }
 
   @slash("setnewschannel")
   SNC(interaction: Interaction) {
-    interaction.reply("SNC")
+    setNewsChannel(interaction);
   }
 
 

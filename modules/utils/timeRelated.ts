@@ -1,30 +1,29 @@
-import daysjs from "https://deno.land/x/dayjs@v1.10.7/types/index.d.ts"
-import utc from "https://deno.land/x/dayjs@v1.10.7/types/plugin/utc.d.ts"
-import timezone from 'https://deno.land/x/dayjs@v1.10.7/types/plugin/timezone.d.ts'; 
-
-interface timeInfo {
-  remainingDays: number;
-  remainingHours: number;
-  remainingMinutes: number;
+export enum GenshinServer {
+  Asia = 8,
+  America = -5,
+  Europe = 1
 }
 
-const timeOffset = {
-  Asia: 8,
-  America: -5,
-  Europe: 1,
-};
+function getServerTime(server: GenshinServer) {
+  const date = new Date();
+  const offset = date.getTimezoneOffset()/60;
+  date.setHours(date.getHours() + offset + server);
+  return date;
+}
 
-function initServer(){
-  const now = utc();
-  now.utcOffset(timeOffset.Europe)
+function UTCToServerTime(date: Date, server: GenshinServer){
+  const serverDate = new Date(date);
+  serverDate.setHours(serverDate.getHours() + server);
+  return serverDate.getTime()/1000;
 }
 
 /**
  * Gets the current day from the Genshin Server standard
  */
-function getGenshinDayName() {
-  const d = new Date();
-  d.setHours(d.getHours() - 4);
+function getGenshinDayName(server: GenshinServer) {
+
+  const d = getServerTime(server);
+
   switch (d.getDay()) {
     case 0:
       return "sunday";
@@ -50,72 +49,18 @@ function getGenshinDayName() {
  * @param time String we want to convert to a date
  */
 function parseTime(time: string): Date {
-  return new Date(time);
-}
+  const regex = /(\d{4})[-\/](\d{2})[-\/](\d{2}) (\d{2}):(\d{2}):(\d{2})/;
+  const result = regex.exec(time);
 
-/**
- * Gets the difference in Millisecond of two dates
- * @param date1 First date
- * @param date2 Second date
- */
-function timeDifference(date1: Date, date2: Date): number {
-  return Math.floor(Math.abs((date1.valueOf() - date2.valueOf())));
-}
+  if (!result) return new Date();
 
-/**
- * Puts the remaining time to an event in a string format
- * @param remaining timeInfo object
- * @param upcomming [OPTIONAL (false)] tells if it's an upcomming event or not
- */
-function stringifyRemainingTime(
-  remaining: timeInfo,
-  upcomming = false,
-): string {
-  if (remaining.remainingDays) {
-    return upcomming
-      ? `In ${remaining.remainingDays} day(s)`
-      : `${remaining.remainingDays} day(s) remaining`;
-  }
-  if (remaining.remainingHours) {
-    return upcomming
-      ? `In ${remaining.remainingHours +
-        (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s)`
-      : `${remaining.remainingHours +
-        (remaining.remainingMinutes > 30 ? 1 : 0)} hour(s) remaining`;
-  }
-  if (remaining.remainingMinutes) {
-    return upcomming
-      ? `Dans ${remaining.remainingMinutes} minute(s)`
-      : `${remaining.remainingMinutes} minute(s) remaining)`;
-  }
-  return "";
-}
+  const [year, month, day, hour, minute, seconds] = result.slice(1).map((x)=> Number.parseInt(x));
 
-/**
- * Gets the remaining time to the end of an event
- * @param endDate date of the end of an event
- * @param startDate [OPTIONAL] date from which we want to calculate the ramining time
- */
-function remainingTime(endDate: Date, startDate?: Date): timeInfo {
-  const oneMinute = 60 * 1000;
-  const oneHour = 60 * oneMinute;
-  const oneDay = 24 * oneHour;
-
-  const today = new Date();
-
-  const time = timeDifference(endDate, startDate || today);
-
-  return {
-    remainingDays: Math.floor(time / oneDay),
-    remainingHours: Math.floor((time % oneDay) / oneHour),
-    remainingMinutes: Math.floor((time % oneHour) / oneMinute),
-  };
+  return new Date(Date.UTC(year, month-1, day, hour, minute, seconds));
 }
 
 export {
   getGenshinDayName,
   parseTime,
-  remainingTime,
-  stringifyRemainingTime,
-  timeDifference,
+  UTCToServerTime
 };

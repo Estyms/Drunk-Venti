@@ -1,7 +1,7 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
 import { createDailyEmbedMessages } from "./daily/dailyInfos.ts";
-import { Message, InteractionResponseFlags, SlashCommandOptionType, SlashCommandPartial, Interaction, Embed, InteractionApplicationCommandData, InteractionChannel } from "../deps.ts";
+import { InteractionResponseFlags, SlashCommandOptionType, SlashCommandPartial, Interaction, Embed, InteractionApplicationCommandData } from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
 
 
@@ -64,13 +64,16 @@ export const commands: SlashCommandPartial[] = [
 
 
 
+
+
+
 export async function createStatusMessage(interaction: Interaction) {
 
   const server = await Server.where("guild_id", interaction.guild?.id || "").first();
 
   const options = <InteractionApplicationCommandData>interaction.data;
 
-  let channel = options.options.find(e => e.name == "channel")
+  const channel = options.options.find(e => e.name == "channel")
 
   if (!channel) {
     interaction.respond({
@@ -89,7 +92,7 @@ export async function createStatusMessage(interaction: Interaction) {
 
   await webHookManager.createChannelWebhook(<string>channel.value);
 
-  if (server["news_channel"] == String(channel.value)){
+  if (server["news_channel"] == String(channel.value)) {
     interaction.respond({
       embeds: [
         new Embed({
@@ -121,7 +124,7 @@ export async function createStatusMessage(interaction: Interaction) {
 
   const client = await interaction.guild?.me()
 
-  if (!client){
+  if (!client) {
     interaction.respond({
       embeds: [
         new Embed({
@@ -182,7 +185,7 @@ export async function createStatusMessage(interaction: Interaction) {
     daily_message_channel: String(messageData.message.channelID),
     daily_message_id: String(messageData.message.id),
   });
-  
+
   interaction.respond({
     embeds: [
       new Embed({
@@ -198,310 +201,293 @@ export async function createStatusMessage(interaction: Interaction) {
 }
 
 
+export async function setNewsChannel(interaction: Interaction) {
 
+  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
 
+  const options = <InteractionApplicationCommandData>interaction.data;
 
-/**
- * Executes a command
- * @param command The command that is executed
- * @param message The message that contains the command
- */
-async function executeCommand(command: string, message: Message) {
-  const serverTest = await Server.where("guild_id", String(message.guildID))
-    .first();
+  const channel = options.options.find(e => e.name == "channel")
 
-  if (!serverTest) {
-    await Server.create([{
-      guild_id: String(message.guildID),
-    }]);
+  if (server["news_channel"] == String(channel?.value)) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Set News Channel",
+          description: `<#${channel?.value}> is already the News Channel.`,
+          color: 0x00FFFF,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
   }
 
-  const server = await Server.where("guild_id", String(message.guildID))
-    .first();
-
-  switch (command) {
-    // Sets the News Channel
-    case "setNewsChannel": {
-      if (server["news_channel"] == String(message.channelID)) {
-        const newMsg = await message.reply(
-          "This channel is already the News Channel !",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      if (server["daily_message_channel"] == String(message.channelID)) {
-        const newMsg = await message.reply(
-          "You can't set the News Channel in the same channel as the Daily Message !",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      Server.where("guild_id", String(message.guildID)).update({
-        news_channel: String(message.channelID),
-      });
-
-      const newMsg = await message.reply(
-        "This channel is now set as the News Channel !",
-      ).catch((e) => {
-        console.error(e);
-        return undefined;
-      });
-
-      if (!newMsg) return;
-
-      setTimeout(() => {
-        newMsg.delete().catch((e) => console.error(e));
-        message.delete().catch((e) => console.error(e));
-      }, 5 * 1000);
-      break;
-    }
-
-    // Adds a twitter account from the news of the server
-
-    case "addTwitterAccount": {
-      const args = message.content.split(" ");
-
-      if (args.length < 3) {
-        const newMsg = await message.reply(
-          "Please refer to ``!dv help`` for the syntax.",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      if (!args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        const newMsg = await message.reply("This is not a twitter username.")
-          .catch((e) => {
-            console.error(e);
-            return undefined;
-          });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      if (!server["news_channel"]) {
-        const newMsg = await message.reply(
-          "Please set News channel first with command ``!dv setNewsChannel`` !",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
-        if (!json || json["errors"]) {
-          return;
-        }
-
-        if (
-          (await Server.tweets(String(message.guildID))).find((m) => {
-            if (m) return m["user_id"] == json["data"]["id"];
-          })
-        ) {
-          const newMsg = await message.reply(
-            "This account is already tracked !",
-          ).catch((e) => {
-            console.error(e);
-            return undefined;
-          });
-
-          if (!newMsg) return;
-
-          setTimeout(() => {
-            newMsg.delete().catch((e) => console.error(e));
-            message.delete().catch((e) => console.error(e));
-          }, 10 * 1000);
-          return;
-        }
-
-        Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
-          if (!res || res["errors"]) {
-            const newMsg = await message.reply("This Account is invalid.")
-              .catch((e) => {
-                console.error(e);
-                return undefined;
-              });
-
-            if (!newMsg) return;
-
-            setTimeout(() => {
-              newMsg.delete().catch((e) => console.error(e));
-              message.delete().catch((e) => console.error(e));
-            }, 10 * 1000);
-            return;
-          }
-
-          if (await Tweet.where("user_id", json["data"]["id"]).count() === 0) {
-            Tweet.create([{
-              user_id: json["data"]["id"],
-            }]);
-          }
-
-          ServerTweet.create([{
-            serverId: String(message.guildID),
-            tweetId: String(json["data"]["id"]),
-          }]);
-
-          const newMsg = await message.reply(
-            `Account @${json["data"]["username"]} is now tracked !`,
-          ).catch((e) => {
-            console.error(e);
-            return undefined;
-          });
-
-          if (!newMsg) return;
-
-          setTimeout(() => {
-            newMsg.delete().catch((e) => console.error(e));
-            message.delete().catch((e) => console.error(e));
-          }, 10 * 1000);
-        });
-      });
-      break;
-    }
-
-    // Remove a twitter account from the news of the server
-
-    case "removeTwitterAccount": {
-      const args = message.content.split(" ");
-
-      if (args.length < 3) {
-        const newMsg = await message.reply(
-          "Please refer to ``!dv help`` for the syntax.",
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      if (!args[2].match(/^[a-zA-Z0-9_]{0,15}$/)) {
-        const newMsg = await message.reply("This is not a twitter username.")
-          .catch((e) => {
-            console.error(e);
-            return undefined;
-          });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 5 * 1000);
-        break;
-      }
-
-      Twitter.getUserId(message.content.split(" ")[2]).then(async (json) => {
-        if (!json) return;
-
-        if (
-          !(await Server.tweets(String(message.guildID))).find((c) => {
-            if (c) c["user_id"] === json["data"]["id"];
-          })
-        ) {
-          const newMsg = await message.reply("This account isn't tracked !")
-            .catch((e) => {
-              console.error(e);
-              return undefined;
-            });
-
-          if (!newMsg) return;
-
-          setTimeout(() => {
-            newMsg.delete().catch((e) => console.error(e));
-            message.delete().catch((e) => console.error(e));
-          }, 10 * 1000);
-          return;
-        }
-
-        ServerTweet.where({
-          serverId: String(message.guildID),
-          tweetId: String(json["data"]["id"]),
-        }).delete();
-
-        if (
-          await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0
-        ) {
-          Tweet.where("user_id", json["data"]["id"]).delete();
-        }
-
-        const newMsg = await message.reply(
-          `Account @${json["data"]["username"]} is no longer tracked !`,
-        ).catch((e) => {
-          console.error(e);
-          return undefined;
-        });
-
-        if (!newMsg) return;
-
-        setTimeout(() => {
-          newMsg.delete().catch((e) => console.error(e));
-          message.delete().catch((e) => console.error(e));
-        }, 10 * 1000);
-      });
-
-      break;
-    }
-
-    // Creates the Daily Message
-
-    case "createDailyMessage": {
-
-    }
-
-    default:
-      break;
+  if (server["daily_message_channel"] == String(channel?.value)) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Set News Channel",
+          description: `<#${channel?.value}> is already the Status Message Channel.`,
+          color: 0x00FFFF,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
   }
+
+  Server.where("guild_id", String(interaction.guild?.id)).update({
+    news_channel: String(channel?.value),
+  });
+
+  interaction.respond({
+    embeds: [
+      new Embed({
+        title: "Set News Channel",
+        description: `<#${channel?.value}> is now set as the News Channel.`,
+        color: 0x00FF00,
+        footer: { text: interaction.client.user?.username || "Drunk Venti" }
+      })
+    ],
+    flags: InteractionResponseFlags.EPHEMERAL
+  })
+  return;
 }
 
-export { executeCommand as Commands };
+
+export async function addTwitterAccount(interaction: Interaction) {
+
+  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
+
+  const options = <InteractionApplicationCommandData>interaction.data;
+
+  const account = options.options.find(e => e.name == "account");
+
+  const twitterAccount = String(<InteractionApplicationCommandData>account?.value);
+
+  if (!twitterAccount) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: "Twitter account not provided.",
+          color: 0xff0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+
+  if (!twitterAccount.match(/^[a-zA-Z0-9_]{0,15}$/)) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: `${twitterAccount} doesn't match the format of a twitter account.`,
+          color: 0xff0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  if (!server["news_channel"]) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Add Twitter Account",
+          description: `There isn't a News Channel set yet.`,
+          color: 0x00ffff,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  Twitter.getUserId(twitterAccount).then(async (json) => {
+    if (!json || json["errors"]) {
+      interaction.respond({
+        embeds: [
+          new Embed({
+            title: "Error",
+            description: `Twitter.getUserId produced an error.`,
+            color: 0xff0000,
+            footer: { text: interaction.client.user?.username || "Drunk Venti" }
+          })
+        ],
+        flags: InteractionResponseFlags.EPHEMERAL
+      })
+      return;
+    }
+
+    if (
+      (await Server.tweets(String(interaction.guild?.id))).find((m) => {
+        if (m) return m["user_id"] == json["data"]["id"];
+      })
+    ) {
+      interaction.respond({
+        embeds: [
+          new Embed({
+            title: "Add Twitter Account",
+            description: `${twitterAccount} is already tracked.`,
+            color: 0x00ffff,
+            footer: { text: interaction.client.user?.username || "Drunk Venti" }
+          })
+        ],
+        flags: InteractionResponseFlags.EPHEMERAL
+      })
+      return;
+    }
+
+    Twitter.getUserTweets(json["data"]["id"]).then(async (res) => {
+      if (!res || res["errors"]) {
+        interaction.respond({
+          embeds: [
+            new Embed({
+              title: "Add Twitter Account",
+              description: `${twitterAccount} is an invalid account.`,
+              color: 0x00ffff,
+              footer: { text: interaction.client.user?.username || "Drunk Venti" }
+            })
+          ],
+          flags: InteractionResponseFlags.EPHEMERAL
+        })
+        return;
+      }
+
+      if (await Tweet.where("user_id", json["data"]["id"]).count() === 0) {
+        Tweet.create([{
+          user_id: json["data"]["id"],
+        }]);
+      }
+
+      ServerTweet.create([{
+        serverId: String(interaction.guild?.id),
+        tweetId: String(json["data"]["id"]),
+      }]);
+
+      interaction.respond({
+        embeds: [
+          new Embed({
+            title: "Add Twitter Account",
+            description: `${twitterAccount} is now tracked !`,
+            color: 0x00ff00,
+            footer: { text: interaction.client.user?.username || "Drunk Venti" }
+          })
+        ],
+        flags: InteractionResponseFlags.EPHEMERAL
+      })
+      return;
+    });
+  });
+}
+
+
+export function removeTwitterAccount(interaction: Interaction) {
+
+  const options = <InteractionApplicationCommandData>interaction.data;
+
+  const account = options.options.find(e => e.name == "account");
+
+  const twitterAccount = String(<InteractionApplicationCommandData>account?.value);
+
+  if (!twitterAccount) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: "Twitter account not provided.",
+          color: 0xff0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  if (!twitterAccount.match(/^[a-zA-Z0-9_]{0,15}$/)) {
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Error",
+          description: `${twitterAccount} doesn't match the format of a twitter account.`,
+          color: 0xff0000,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  }
+
+  Twitter.getUserId(twitterAccount).then(async (json) => {
+    if (!json) {
+      interaction.respond({
+        embeds: [
+          new Embed({
+            title: "Error",
+            description: `Twitter.getUserId produced an error.`,
+            color: 0xff0000,
+            footer: { text: interaction.client.user?.username || "Drunk Venti" }
+          })
+        ],
+        flags: InteractionResponseFlags.EPHEMERAL
+      })
+      return;
+    }
+
+    if (
+      !(await Server.tweets(String(interaction.guild?.id))).find((c) => {
+        if (c) c["user_id"] === json["data"]["id"];
+      })
+    ) {
+      interaction.respond({
+        embeds: [
+          new Embed({
+            title: "Remove Twitter Account",
+            description: `${twitterAccount} isn't tracked.`,
+            color: 0x00ffff,
+            footer: { text: interaction.client.user?.username || "Drunk Venti" }
+          })
+        ],
+        flags: InteractionResponseFlags.EPHEMERAL
+      })
+      return;
+    }
+
+    ServerTweet.where({
+      serverId: String(interaction.guild?.id),
+      tweetId: String(json["data"]["id"]),
+    }).delete();
+
+    if (
+      await ServerTweet.where("tweetId", json["data"]["id"]).count() === 0
+    ) {
+      Tweet.where("user_id", json["data"]["id"]).delete();
+    }
+
+    interaction.respond({
+      embeds: [
+        new Embed({
+          title: "Remove Twitter Account",
+          description: `${twitterAccount} is no longer tracked.`,
+          color: 0x00ff00,
+          footer: { text: interaction.client.user?.username || "Drunk Venti" }
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+    return;
+  });
+}

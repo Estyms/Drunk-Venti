@@ -1,7 +1,7 @@
 import { Server } from "../mongodb.ts";
 import { Embed } from "../../deps.ts";
 import { DrunkVenti } from "../../index.ts"
-import { getGenshinDayName } from "../utils/timeRelated.ts";
+import { getGenshinDayName, GenshinServer } from "../utils/timeRelated.ts";
 import { dailyEvents } from "./dailyEvents.ts";
 import { webHookManager } from "../utils/webhookManager.ts";
 
@@ -9,14 +9,14 @@ import { webHookManager } from "../utils/webhookManager.ts";
  * Creates the Embed messages for the Daily Message
  */
 async function createDailyEmbedMessages(): Promise<Embed[]> {
-  const messages = await dailyEvents.createEmbedEvents();
+  const messages = await dailyEvents.createEmbedEvents(GenshinServer.Europe);
 
-  const message: Embed = getGenshinDayName() != "sunday"
+  const message: Embed = getGenshinDayName(GenshinServer.Europe) != "sunday"
     ? new Embed({
       title: "Todays Farmable Objects",
       image: {
         url:
-          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName()}.png`,
+          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName(GenshinServer.Europe)}.png`,
       },
       color: 0x0099E1,
     })
