@@ -60,17 +60,17 @@ export class DrunkVenti extends Client {
 
   // Setups the commands
   createCommands(guild: Guild) {
-    const arr : boolean[] = []
+    var test = false
     commands.forEach(async command => {
-      if (arr.length) return;
+      if (test) return;
       try {
         await this.interactions.commands.create(command, guild);
       } catch (_e) {
-        arr.push(true)
+        test = true
       }
     })
-    console.log(`${guild.name}, ${arr.length}`);
-    return arr.length;
+    console.log(`${guild.name}, ${test}`);
+    return test;
   }
 
   // Checks if a guild is configured properly
