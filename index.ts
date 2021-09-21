@@ -60,6 +60,7 @@ export class DrunkVenti extends Client {
 
   // Setups the commands
   createCommands(guild: Guild) {
+    console.log(`creating command for ${guild.name}`);
     let errored = false;
     commands.forEach(async command => {
       if (errored) return;
