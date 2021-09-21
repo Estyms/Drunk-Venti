@@ -59,18 +59,16 @@ export class DrunkVenti extends Client {
   }
 
   // Setups the commands
-  createCommands(guild: Guild) {
-    var test = false
-    commands.forEach(async command => {
-      if (test) return;
+  async createCommands(guild: Guild) {
+
+    for (let i = 0; i < commands.length; i++) {
       try {
-        await this.interactions.commands.create(command, guild);
-      } catch (_e) {
-        test = true
+        await this.interactions.commands.create(commands[i]);
+      } catch (_){
+        return false;
       }
-    })
-    console.log(`${guild.name}, ${test}`);
-    return test;
+    }
+    return true;
   }
 
   // Checks if a guild is configured properly
@@ -274,7 +272,7 @@ export class DrunkVenti extends Client {
 
   @slash("createstatusmessage")
   CSM(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
       this.unsufficientPermissions(interaction)
       return;
     }
@@ -283,7 +281,7 @@ export class DrunkVenti extends Client {
 
   @slash("addtwitteraccount")
   ATA(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
       this.unsufficientPermissions(interaction)
       return;
     }
@@ -292,7 +290,7 @@ export class DrunkVenti extends Client {
 
   @slash("removetwitteraccount")
   RTA(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
       this.unsufficientPermissions(interaction)
       return;
     }
@@ -301,7 +299,7 @@ export class DrunkVenti extends Client {
 
   @slash("setnewschannel")
   SNC(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
       this.unsufficientPermissions(interaction)
       return;
     }
