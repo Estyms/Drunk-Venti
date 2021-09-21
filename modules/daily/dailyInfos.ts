@@ -34,7 +34,7 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
 /**
  * Updates the daily info messages from all servers
  */
-async function updateDailyInfos(client : DrunkVenti) {
+async function updateDailyInfos(client: DrunkVenti) {
   // We get all the daily messages to update from all server
   const dailyMessageIdList = await Server.select(
     "guild_id",
@@ -50,21 +50,25 @@ async function updateDailyInfos(client : DrunkVenti) {
     server["daily_message_id"] && server["daily_message_channel"]
   ).forEach(
     (async (server) => {
-      if (await client.guilds.get(<string> server["guild_id"]) == undefined) {
+      if (await client.guilds.get(<string>server["guild_id"]) == undefined) {
         return;
       }
-      const message = await webHookManager.getWebhookMessage(
-        <string> server["daily_message_channel"],
-        <string> server["daily_message_id"],
-      ).catch((e) => console.error(e));
 
-      if (!message) return;
+      if (server["daily_message_channel"] && server["daily_message_id"]) {
 
-      await webHookManager.editWebhookMessage(
-        message,
-        message.channelID,
-        messages,
-      ).catch((e)=>console.error(e));
+        const message = await webHookManager.getWebhookMessage(
+          <string>server["daily_message_channel"],
+          <string>server["daily_message_id"],
+        ).catch((e) => console.error(e));
+
+        if (!message) return;
+
+        await webHookManager.editWebhookMessage(
+          message,
+          message.channelID,
+          messages,
+        ).catch((e) => console.error(e));
+      }
     }),
   );
 }
