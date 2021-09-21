@@ -65,10 +65,10 @@ export class DrunkVenti extends Client {
       try {
         await this.interactions.commands.create(commands[i], guild);
       } catch (_){
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   // Checks if a guild is configured properly
