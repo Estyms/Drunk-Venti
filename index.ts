@@ -10,7 +10,10 @@ import {
   Client,
   event,
   slash,
-  Interaction
+  Interaction,
+  Embed,
+  InteractionResponseFlags,
+  Member
 } from "./deps.ts";
 import { checkPerms, Permissions } from "./modules/utils/checkPerms.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
@@ -24,10 +27,10 @@ export class DrunkVenti extends Client {
   // Bot startup function
   start() {
     // Tweets
-    /*checkTweets();
+    this.checkTweets();
     cron("0/15 * * * *", () => {
-      checkTweets();
-    });*/
+      this.checkTweets();
+    });
 
     // Tweets
     dailyEvents.getEventsData();
@@ -56,14 +59,21 @@ export class DrunkVenti extends Client {
   }
 
   // Setups the commands
-  createCommands(guild : Guild) {
-    commands.forEach(command => {
-      this.interactions.commands.create(command, guild);
+  createCommands(guild: Guild) {
+    let errored = false;
+    commands.forEach(async command => {
+      if (errored) return;
+      try {
+        await this.interactions.commands.create(command, guild);
+      } catch (_e) {
+        errored = true;
+      }
     })
+    return errored;
   }
 
   // Checks if a guild is configured properly
-  async checkGuild(guild: Guild | Role) {
+  async checkGuild(guild: Guild | Role, newServer: boolean) {
     if (guild instanceof Role) guild = guild.guild;
     const member = await guild.me();
 
@@ -83,13 +93,15 @@ export class DrunkVenti extends Client {
 
       if (!ownerDM) return;
 
+
       await ownerDM.send(
-        "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``",
+        newServer ? "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``\nYou can use this link to invite me again : https://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684472320&scope=bot%20applications.commands"
+          : "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym."
       ).catch((e) => console.error(e));
       guild.leave().catch((e) => console.error(e));
     }
 
-    if (!await Server.where("guild_id", guild.id).first()){
+    if (!await Server.where("guild_id", guild.id).first()) {
       await Server.create([{
         guild_id: guild.id
       }])
@@ -169,6 +181,20 @@ export class DrunkVenti extends Client {
     client.channels.sendMessage(channelId, message).catch((e) => console.error(e));
   }
 
+  unsufficientPermissions(interaction: Interaction) {
+    interaction.reply({
+      embeds: [
+        new Embed({
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+          color: 0xff0000,
+          description: "You are not an administrator.",
+          title: "Unsufficient Permissions"
+        })
+      ],
+      flags: InteractionResponseFlags.EPHEMERAL
+    })
+  }
+
   @event("ready")
   ready() {
     console.log("Bot Ready !");
@@ -187,40 +213,44 @@ export class DrunkVenti extends Client {
   }
 
   @event("guildLoaded")
-  guildLoaded(guild: Guild) {
-    this.checkGuild(guild);
-    try {
-      this.createCommands(guild);
-    } catch (_e){
+  async guildLoaded(guild: Guild) {
+
+    this.checkGuild(guild, true);
+
+    if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
-      this.createDM(guild.ownerID || "").then((x)=> x.send("Please add back the bot with the updated permission !"))
+      this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym."))
       guild.leave();
+      return;
     }
   }
 
   @event("guildCreate")
   async guildCreate(guild: Guild) {
-    this.checkGuild(guild);
 
-    try {
-      this.createCommands(guild);
-    } catch (_e){
+    this.checkGuild(guild, false);
+
+    if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
-      this.createDM(guild.ownerID || "").then((x)=> x.send("Please add back the bot with the updated permission !"))
+      this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym."))
       guild.leave();
+      return;
     }
+
+
 
     const server = await Server.where("guild_id", String(guild.id)).first();
 
     if (!server) return;
 
-    const message = await webHookManager.getMessage(
-      <string>server["daily_message_channel"],
-      <string>server["daily_message_id"],
-    ).catch(e => console.error(e))
+    if (server["daily_message_channel"] && server["daily_message_id"]) {
+      const message = await webHookManager.getMessage(
+        <string>server["daily_message_channel"],
+        <string>server["daily_message_id"],
+      ).catch(_ => { })
 
-    if (message) message.delete().catch((e) => console.error(e));
-
+      if (message) message.delete().catch((e) => console.error(e));
+    }
 
     Server.where("guild_id", String(guild.id)).delete();
     Server.create(
@@ -237,27 +267,43 @@ export class DrunkVenti extends Client {
 
   @event("guildRoleUpdate")
   guildRoleUpdate(guild: Guild) {
-    this.checkGuild(guild);
+    this.checkGuild(guild, false);
   }
 
 
   @slash("createstatusmessage")
   CSM(interaction: Interaction) {
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+      this.unsufficientPermissions(interaction)
+      return;
+    }
     createStatusMessage(interaction)
   }
 
   @slash("addtwitteraccount")
   ATA(interaction: Interaction) {
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+      this.unsufficientPermissions(interaction)
+      return;
+    }
     addTwitterAccount(interaction);
   }
 
   @slash("removetwitteraccount")
   RTA(interaction: Interaction) {
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+      this.unsufficientPermissions(interaction)
+      return;
+    }
     removeTwitterAccount(interaction);
   }
 
   @slash("setnewschannel")
   SNC(interaction: Interaction) {
+    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)){
+      this.unsufficientPermissions(interaction)
+      return;
+    }
     setNewsChannel(interaction);
   }
 

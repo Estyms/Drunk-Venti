@@ -9,7 +9,7 @@ import { webHookManager } from "../utils/webhookManager.ts";
  * Creates the Embed messages for the Daily Message
  */
 async function createDailyEmbedMessages(): Promise<Embed[]> {
-  const messages = await dailyEvents.createEmbedEvents(GenshinServer.Europe);
+  const messages = await dailyEvents.createEmbedEvents();
 
   const message: Embed = getGenshinDayName(GenshinServer.Europe) != "sunday"
     ? new Embed({

@@ -57,21 +57,19 @@ class dailyEvents {
  */
   getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     const date = new Date();
-    date.setHours(date.getHours() + date.getTimezoneOffset()/60)
+    date.setHours(date.getHours() + date.getTimezoneOffset() / 60)
 
 
-    
+
 
     const CurrentEvents = allEvents.filter((event) =>
-      date.getTime()/1000 > <number> event.start &&
-      date.getTime()/1000 < <number> event.end
+      date.getTime() / 1000 > <number>event.start &&
+      date.getTime() / 1000 < <number>event.end
     );
     CurrentEvents.sort((a, b) =>
-      <number> a.end - <number> b.end
+      <number>a.end - <number>b.end
     );
     CurrentEvents.sort((a, b) => (a.url ? 0 : 1) - (b.url ? 0 : 1));
-
-    console.table(allEvents);
 
 
     return CurrentEvents;
@@ -85,10 +83,10 @@ class dailyEvents {
     const date = new Date();
 
     let UpcommingEvents = allEvents.filter((event) =>
-      date.getTime()/1000 < <number> event.start
+      date.getTime() / 1000 < <number>event.start
     );
     UpcommingEvents = UpcommingEvents.sort((a, b) =>
-        <number> a.start - <number> b.start
+      <number>a.start - <number>b.start
     );
 
     const UpcommingEvent = UpcommingEvents[0];
@@ -96,17 +94,15 @@ class dailyEvents {
   }
 
 
-  formatTime(allEvents : eventItem[], server : GenshinServer){
-    return allEvents.map(event=> {
+  formatTime(allEvents: eventItem[], server: GenshinServer) {
+    return allEvents.map(event => {
       const x = event;
-      const datestr = event.start
-      const test = parseTime(<string>x.start)
       if (x.timezoneDependant) {
         x.start = UTCToServerTime(parseTime(<string>x.start), server);
-        x.end = parseTime(<string>x.end).getTime()/1000;
+        x.end = parseTime(<string>x.end).getTime() / 1000;
       } else {
-        x.start = parseTime(<string>x.start).getTime()/1000;
-        x.end = parseTime(<string>x.end).getTime()/1000;
+        x.start = parseTime(<string>x.start).getTime() / 1000;
+        x.end = parseTime(<string>x.end).getTime() / 1000;
       }
 
       return event;
@@ -118,10 +114,9 @@ class dailyEvents {
  * Gets all the data needed Event wise
  */
   async getEventsData(): Promise<void> {
-    const server = GenshinServer.Europe
     let allEvents = await (await this.getAllEvents()).flat(2);
     allEvents = this.formatTime(allEvents, GenshinServer.Europe);
-    
+
     const currentEvents = this.getCurrentEventsData(allEvents);
 
     const upcommingEvent = this.getUpcommingEvent(allEvents);
@@ -133,7 +128,7 @@ class dailyEvents {
   /**
  * Creates the Embed messages for all the events
  */
-  async createEmbedEvents(server: GenshinServer) {
+  async createEmbedEvents() {
     this.AllEvents || await this.getEventsData();
     const EventData: eventData = this.AllEvents as eventData;
     const EmbedMessages: Embed[] = [];
@@ -179,7 +174,7 @@ class dailyEvents {
     const nextUpdate = this.getDateOfNextUpdate();
     EmbedMessages.push(
       EventData.upcomming?.start &&
-      <number> EventData.upcomming.start <  nextUpdate.getTime()/1000
+        <number>EventData.upcomming.start < nextUpdate.getTime() / 1000
         ? new Embed({
           title: "SOON : " + EventData.upcomming.name,
           url: EventData.upcomming.url ? EventData.upcomming.url + "?".repeat(EmbedMessages.length) : undefined,
@@ -194,7 +189,7 @@ class dailyEvents {
         })
         : new Embed({
           title: "SOON : Next update",
-          description: `<t:${nextUpdate.getTime()/1000}, server)}:R>`,
+          description: `<t:${nextUpdate.getTime() / 1000}, server)}:R>`,
           color: Math.round(Math.random() * 0xffffff),
         }),
     );
@@ -212,11 +207,11 @@ class dailyEvents {
 
     // Gets today date
     const today = new Date();
-    today.setHours(today.getHours() + today.getTimezoneOffset()/60)
+    today.setHours(today.getHours() + today.getTimezoneOffset() / 60)
     // Gets the time between today and the reference Update
 
-    while(referenceUpdate.getTime()/1000 < today.getTime()/1000){
-      referenceUpdate.setDate(referenceUpdate.getDate()+42);
+    while (referenceUpdate.getTime() / 1000 < today.getTime() / 1000) {
+      referenceUpdate.setDate(referenceUpdate.getDate() + 42);
     }
 
     return referenceUpdate;

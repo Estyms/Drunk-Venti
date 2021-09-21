@@ -17,7 +17,7 @@ export const commands: SlashCommandPartial[] = [
         type: SlashCommandOptionType.CHANNEL,
         required: true
       }
-    ]
+    ],
   },
 
   {
@@ -98,7 +98,7 @@ export async function createStatusMessage(interaction: Interaction) {
         new Embed({
           title: "Create Status Message",
           description: `<#${channel.value}> is already the News Channel.`,
-          color: 0x00FFFF,
+          color: 0xffff00,
           footer: { text: interaction.client.user?.username || "Drunk Venti" }
         })
       ],
@@ -215,7 +215,7 @@ export async function setNewsChannel(interaction: Interaction) {
         new Embed({
           title: "Set News Channel",
           description: `<#${channel?.value}> is already the News Channel.`,
-          color: 0x00FFFF,
+          color: 0xffff00,
           footer: { text: interaction.client.user?.username || "Drunk Venti" }
         })
       ],
@@ -230,7 +230,7 @@ export async function setNewsChannel(interaction: Interaction) {
         new Embed({
           title: "Set News Channel",
           description: `<#${channel?.value}> is already the Status Message Channel.`,
-          color: 0x00FFFF,
+          color: 0xffff00,
           footer: { text: interaction.client.user?.username || "Drunk Venti" }
         })
       ],
@@ -305,7 +305,7 @@ export async function addTwitterAccount(interaction: Interaction) {
         new Embed({
           title: "Add Twitter Account",
           description: `There isn't a News Channel set yet.`,
-          color: 0x00ffff,
+          color: 0xffff00,
           footer: { text: interaction.client.user?.username || "Drunk Venti" }
         })
       ],
@@ -320,7 +320,7 @@ export async function addTwitterAccount(interaction: Interaction) {
         embeds: [
           new Embed({
             title: "Error",
-            description: `Twitter.getUserId produced an error.`,
+            description: `${twitterAccount} accounts doesn't exist.`,
             color: 0xff0000,
             footer: { text: interaction.client.user?.username || "Drunk Venti" }
           })
@@ -340,7 +340,7 @@ export async function addTwitterAccount(interaction: Interaction) {
           new Embed({
             title: "Add Twitter Account",
             description: `${twitterAccount} is already tracked.`,
-            color: 0x00ffff,
+            color: 0xffff00,
             footer: { text: interaction.client.user?.username || "Drunk Venti" }
           })
         ],
@@ -356,7 +356,7 @@ export async function addTwitterAccount(interaction: Interaction) {
             new Embed({
               title: "Add Twitter Account",
               description: `${twitterAccount} is an invalid account.`,
-              color: 0x00ffff,
+              color: 0xffff00,
               footer: { text: interaction.client.user?.username || "Drunk Venti" }
             })
           ],
@@ -432,12 +432,12 @@ export function removeTwitterAccount(interaction: Interaction) {
   }
 
   Twitter.getUserId(twitterAccount).then(async (json) => {
-    if (!json) {
+    if (!json || !json["data"]) {
       interaction.respond({
         embeds: [
           new Embed({
             title: "Error",
-            description: `Twitter.getUserId produced an error.`,
+            description: `${twitterAccount} accounts doesn't exist.`,
             color: 0xff0000,
             footer: { text: interaction.client.user?.username || "Drunk Venti" }
           })
@@ -449,7 +449,8 @@ export function removeTwitterAccount(interaction: Interaction) {
 
     if (
       !(await Server.tweets(String(interaction.guild?.id))).find((c) => {
-        if (c) c["user_id"] === json["data"]["id"];
+        console.log(c);
+        if (c) return c["user_id"] === json["data"]["id"];
       })
     ) {
       interaction.respond({
@@ -457,7 +458,7 @@ export function removeTwitterAccount(interaction: Interaction) {
           new Embed({
             title: "Remove Twitter Account",
             description: `${twitterAccount} isn't tracked.`,
-            color: 0x00ffff,
+            color: 0xffff00,
             footer: { text: interaction.client.user?.username || "Drunk Venti" }
           })
         ],
