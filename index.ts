@@ -64,9 +64,7 @@ export class DrunkVenti extends Client {
     for (let i = 0; i < commands.length; i++) {
       try {
         if (guild) {
-          await this.interactions.commands.create(commands[i], guild)
-        } else {
-          await this.interactions.commands.create(commands[i])
+          await this.interactions.commands.create(commands[i], guild);
         }
       } catch (e){
         console.error(e);
@@ -202,7 +200,7 @@ export class DrunkVenti extends Client {
   @event("ready")
   ready() {
     console.log("Bot Ready !");
-    this.createCommands(undefined);
+    this.createCommands(undefined)
     const activity: ClientActivity = {
       status: "online",
       since: 0,
