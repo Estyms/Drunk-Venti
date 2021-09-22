@@ -259,7 +259,7 @@ export class DrunkVenti extends Client {
   @event("guildLoaded")
   async guildLoaded(guild: Guild) {
 
-    this.checkGuild(guild, true);
+    await this.checkGuild(guild, true);
 
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
@@ -273,7 +273,7 @@ export class DrunkVenti extends Client {
   @event("guildCreate")
   async guildCreate(guild: Guild) {
 
-    this.checkGuild(guild, false);
+    await this.checkGuild(guild, false);
 
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
