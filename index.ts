@@ -84,14 +84,7 @@ export class DrunkVenti extends Client {
     try {
       guildCommandsCollections = await this.interactions.commands.guild(guild)
     } catch (_) {
-      try {
-      await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(() => guild.leave()))
-      } catch (_){
-        // Too bad
-      }
-      if (!(await this.guilds.array()).find(x => x.id == guild.id)) return;
-      await guild.leave();
-      return;
+      return true;
     }
     const guildCommands = await guildCommandsCollections.map(x => { return { id: x.id, name: x.name } });
     const exec = async () => await this.asyncForEach(guildCommands, async (x: { id: string, name: string }) => {
@@ -99,13 +92,13 @@ export class DrunkVenti extends Client {
       try {
         await this.interactions.commands.delete(x.id, guild);
       } catch (_) {
-
+        //
       }
     })
 
     await exec()
 
-    return;
+    return false;
 
 
 
@@ -113,7 +106,7 @@ export class DrunkVenti extends Client {
 
   // Setups the commands
   async createCommands(guild: Guild) {
-    await this.deleteGuildCommands(guild);
+    if (await this.deleteGuildCommands(guild)) return true;
     for (let i = 0; i < commands.length; i++) {
       try {
         if (guild) {
@@ -288,46 +281,43 @@ export class DrunkVenti extends Client {
     }
   }
 
-  // @event("guildCreate")
-  // async guildCreate(guild: Guild) {
+  @event("guildCreate")
+  async guildCreate(guild: Guild) {
 
-  //   await this.checkGuild(guild, false);
+    await this.checkGuild(guild, false);
 
-  //   if (await this.createCommands(guild)) {
-  //     console.log(`Quitting ${guild.name}`);
-  //     try {
-  //       await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(() => guild.leave()))
-  //     } catch (_) {/** */ }
-  //     return;
-  //   }
+    if (await this.createCommands(guild)) {
+      console.log(`Quitting ${guild.name}`);
+      return;
+    }
 
 
 
-  //   const server = await Server.where("guild_id", String(guild.id)).first();
+    const server = await Server.where("guild_id", String(guild.id)).first();
 
-  //   if (!server) return;
+    if (!server) return;
 
-  //   if (server["daily_message_channel"] && server["daily_message_id"]) {
-  //     const message = await webHookManager.getMessage(
-  //       <string>server["daily_message_channel"],
-  //       <string>server["daily_message_id"],
-  //     ).catch(_ => { })
+    if (server["daily_message_channel"] && server["daily_message_id"]) {
+      const message = await webHookManager.getMessage(
+        <string>server["daily_message_channel"],
+        <string>server["daily_message_id"],
+      ).catch(_ => { })
 
-  //     if (message) message.delete().catch((e) => console.error(e));
-  //   }
+      if (message) message.delete().catch((e) => console.error(e));
+    }
 
-  //   Server.where("guild_id", String(guild.id)).delete();
-  //   Server.create(
-  //     server["news_channel"]
-  //       ? [{
-  //         guild_id: String(guild.id),
-  //         news_channel: <string>server["news_channel"],
-  //       }]
-  //       : [{
-  //         guild_id: String(guild.id),
-  //       }],
-  //   );
-  // }
+    Server.where("guild_id", String(guild.id)).delete();
+    Server.create(
+      server["news_channel"]
+        ? [{
+          guild_id: String(guild.id),
+          news_channel: <string>server["news_channel"],
+        }]
+        : [{
+          guild_id: String(guild.id),
+        }],
+    );
+  }
 
   @event("guildRoleUpdate")
   guildRoleUpdate(guild: Guild) {
