@@ -81,7 +81,6 @@ export class DrunkVenti extends Client {
 
   async deleteGuildCommands(guild: Guild) {
     let guildCommandsCollections;
-    if (!(await this.guilds.array()).find(x => x.id == guild.id)) return;
     try {
       guildCommandsCollections = await this.interactions.commands.guild(guild)
     } catch (_) {
@@ -90,6 +89,7 @@ export class DrunkVenti extends Client {
       } catch (_){
         // Too bad
       }
+      if (!(await this.guilds.array()).find(x => x.id == guild.id)) return;
       await guild.leave();
       return;
     }
