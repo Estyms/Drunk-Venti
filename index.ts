@@ -56,6 +56,10 @@ export class DrunkVenti extends Client {
         ]);
       }
     })
+
+    cron("0/5 * * * *", () => {
+      this.setActivity();
+    })
   }
 
   async asyncForEach<T>(array: T[], callback: (x: T) => Promise<void>) {
@@ -90,11 +94,8 @@ export class DrunkVenti extends Client {
   }
 
   // Setups the commands
-  async createCommands(guild: Guild | undefined) {
-    console.log(guild?.name)
-    if (guild) {
-      await this.deleteGuildCommands(guild);
-    }
+  async createCommands(guild: Guild) {
+    await this.deleteGuildCommands(guild);
     for (let i = 0; i < commands.length; i++) {
       try {
         if (guild) {
@@ -231,20 +232,26 @@ export class DrunkVenti extends Client {
     })
   }
 
-  @event("ready")
-  ready() {
-    console.log("Bot Ready !");
-    this.deleteGlobalCommands();
+
+  async setActivity(){
     const activity: ClientActivity = {
       status: "online",
       since: 0,
       afk: false,
       activity: {
-        name: "Getting drunk",
-        type: "PLAYING"
+        name: `Drinking in ${await (await this.guilds.array()).length} servers !`,
+        type: "PLAYING",
       }
     };
     this.setPresence(activity);
+  }
+
+
+  @event("ready")
+  ready() {
+    console.log("Bot Ready !");
+    this.deleteGlobalCommands();
+    this.setActivity();
     webHookManager.create(this);
     this.start();
   }
