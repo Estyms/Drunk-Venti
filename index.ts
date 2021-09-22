@@ -84,7 +84,11 @@ export class DrunkVenti extends Client {
     try {
       guildCommandsCollections = await this.interactions.commands.guild(guild)
     } catch (_) {
+      try {
       await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(() => guild.leave()))
+      } catch (_){
+        // Too bad
+      }
       await guild.leave();
       return;
     }
