@@ -132,14 +132,14 @@ class WebHookManagerClass {
       console.error(e)
     );
 
-    if (message && textChannel && webHookManager) {
+    if (message && textChannel && webhookPayload) {
       return new Message(
         WebHookManagerClass.client,
         message,
         <TextChannel> textChannel,
         new User(
           WebHookManagerClass.client,
-          <UserPayload> (<WebhookPayload> webhookPayload).user,
+          <UserPayload> (<WebhookPayload> webhookPayload)?.user,
         ),
       );
     }
