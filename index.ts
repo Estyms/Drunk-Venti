@@ -70,7 +70,7 @@ export class DrunkVenti extends Client {
 
   async deleteGlobalCommands() {
     const globalCommands = await (await this.interactions.commands.all()).map(x => { return { id: x.id, name: x.name } });
-    const exec = async () => await this.asyncForEach(globalCommands, async (x: { id: string, name: string }) => {
+    const exec = async () => this.asyncForEach(globalCommands, async (x: { id: string, name: string }) => {
       await this.interactions.commands.delete(x.id);
     })
 
@@ -87,7 +87,7 @@ export class DrunkVenti extends Client {
       return true;
     }
     const guildCommands = await guildCommandsCollections.map(x => { return { id: x.id, name: x.name } });
-    const exec = async () => await this.asyncForEach(guildCommands, async (x: { id: string, name: string }) => {
+    const exec = async () => this.asyncForEach(guildCommands, async (x: { id: string, name: string }) => {
       if (!(await this.guilds.array()).find(x => x.id == guild.id)) return;
       try {
         await this.interactions.commands.delete(x.id, guild);
@@ -275,7 +275,7 @@ export class DrunkVenti extends Client {
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
       try {
-        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => await guild.leave()))
+        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => guild.leave()))
       } catch (_) {/** */ }
       return;
     }
@@ -289,7 +289,7 @@ export class DrunkVenti extends Client {
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
       try {
-        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => await guild.leave()))
+        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => guild.leave()))
       } catch (_) {/** */ }
       return;
     }
