@@ -17,13 +17,11 @@ All of the informations used currently are fetched from the [paimon.moe](https:/
 
 ## Commands 
 
-### Prefix !dv
-
-*  **!dv help** : Shows commands
-* **!dv setNewsChannel** : Sets current channel as the News Channel. 
-* **!dv addTwitterAccount [twitterAccount]** : Adds twitterAccount to track list. 
-* **!dv removeTwitterAccount [twitterAccount]** : Removes twitter Account from track list. 
-* **!dv createDailyMessage** : Creates the embed message for daily informations.
+### Slash commands
+* **/setNewsChannel** : Sets current channel as the News Channel. 
+* **/addTwitterAccount [twitterAccount]** : Adds twitterAccount to track list. 
+* **/removeTwitterAccount [twitterAccount]** : Removes twitter Account from track list. 
+* **/createstatusmessage** : Creates the embed message for daily informations.
 
 ## Invite
 
