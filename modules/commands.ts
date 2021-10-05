@@ -449,7 +449,6 @@ export function removeTwitterAccount(interaction: Interaction) {
 
     if (
       !(await Server.tweets(String(interaction.guild?.id))).find((c) => {
-        console.log(c);
         if (c) return c["user_id"] === json["data"]["id"];
       })
     ) {
