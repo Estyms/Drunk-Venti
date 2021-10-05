@@ -164,7 +164,7 @@ class dailyEvents {
 
     EmbedMessages.push(
       new Embed({
-        title: "Autres",
+        title: "Others",
         fields: EmbedFields,
         color: Math.round(Math.random() * 0xffffff),
       }),
