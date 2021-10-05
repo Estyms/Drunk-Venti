@@ -6,7 +6,7 @@
 # Drunk Venti
 
 
-[![](https://img.shields.io/badge/harmony-v2.0.0-blue.svg?logo=deno)](https://github.com/harmonyland/harmony)
+[![](https://img.shields.io/badge/harmony-v2.2.0-blue.svg?logo=deno)](https://github.com/harmonyland/harmony)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/estyms/drunk-venti/badge)](https://www.codefactor.io/repository/github/estyms/drunk-venti) 
 
