@@ -189,7 +189,7 @@ class dailyEvents {
         })
         : new Embed({
           title: "SOON : Next update",
-          description: `<t:${nextUpdate.getTime() / 1000}, server)}:R>`,
+          description: `<t:${nextUpdate.getTime() / 1000}:R>`,
           color: Math.round(Math.random() * 0xffffff),
         }),
     );
