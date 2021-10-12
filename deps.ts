@@ -17,7 +17,8 @@ export {
   SlashCommandOptionType,
   slash,
   InteractionChannel,
-  InteractionResponseFlags
+  InteractionResponseFlags,
+  
 } from "https://deno.land/x/harmony@v2.2.0/mod.ts";
 export type {
   ClientActivity,
@@ -30,7 +31,9 @@ export type {
   Interaction,
   InteractionType,
   InteractionApplicationCommandData,
-  
+  MessageComponentData,
+  MessageComponentBase,
+  InteractionMessageComponentData
 } from "https://deno.land/x/harmony@v2.2.0/mod.ts";
 
 export {

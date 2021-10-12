@@ -1,9 +1,19 @@
 import { Server, ServerTweet, Tweet } from "./mongodb.ts";
 import { Twitter } from "./twitter.ts";
 import { createDailyEmbedMessages } from "./daily/dailyInfos.ts";
-import { InteractionResponseFlags, SlashCommandOptionType, SlashCommandPartial, Interaction, Embed, InteractionApplicationCommandData } from "../deps.ts";
+import {
+  Embed,
+  Interaction,
+  InteractionApplicationCommandData,
+  InteractionResponseFlags,
+  SlashCommandOptionType,
+  SlashCommandPartial,
+  MessageComponentData,
+  MessageComponentBase
+} from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
-
+import { characterBuilds } from "./builds/characters.ts";
+import { editDist, serialize } from "./utils/stringRelated.ts";
 
 // Every command descriptions
 export const commands: SlashCommandPartial[] = [
@@ -15,8 +25,8 @@ export const commands: SlashCommandPartial[] = [
         name: "channel",
         description: "Channel to set as the news channel.",
         type: SlashCommandOptionType.CHANNEL,
-        required: true
-      }
+        required: true,
+      },
     ],
   },
 
@@ -28,9 +38,9 @@ export const commands: SlashCommandPartial[] = [
         name: "channel",
         description: "Channel where the status message will be created.",
         type: SlashCommandOptionType.CHANNEL,
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
 
   {
@@ -41,9 +51,9 @@ export const commands: SlashCommandPartial[] = [
         name: "account",
         description: "Twitter account to add.",
         type: SlashCommandOptionType.STRING,
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
 
   {
@@ -54,26 +64,31 @@ export const commands: SlashCommandPartial[] = [
         name: "account",
         description: "Twitter account to remove.",
         type: SlashCommandOptionType.STRING,
-        required: true
-      }
-    ]
-  }
-]
-
-
-
-
-
-
-
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "characterbuilds",
+    description: "Shows builds for a Genshin Impact Characters",
+    options: [
+      {
+        name: "character",
+        description: "Character to get builds for.",
+        type: SlashCommandOptionType.STRING,
+        required: true,
+      },
+    ],
+  },
+];
 
 export async function createStatusMessage(interaction: Interaction) {
-
-  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
+  const server = await Server.where("guild_id", interaction.guild?.id || "")
+    .first();
 
   const options = <InteractionApplicationCommandData>interaction.data;
 
-  const channel = options.options.find(e => e.name == "channel")
+  const channel = options.options.find((e) => e.name == "channel");
 
   if (!channel) {
     interaction.respond({
@@ -82,11 +97,11 @@ export async function createStatusMessage(interaction: Interaction) {
           title: "Error",
           description: "Channel not provided",
           color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -99,11 +114,11 @@ export async function createStatusMessage(interaction: Interaction) {
           title: "Create Status Message",
           description: `<#${channel.value}> is already the News Channel.`,
           color: 0xffff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -122,7 +137,7 @@ export async function createStatusMessage(interaction: Interaction) {
     }
   }
 
-  const client = await interaction.guild?.me()
+  const client = await interaction.guild?.me();
 
   if (!client) {
     interaction.respond({
@@ -131,20 +146,18 @@ export async function createStatusMessage(interaction: Interaction) {
           title: "Error",
           description: `Critical bug guild.me doesn't exists`,
           color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
-
 
   const resolvedChannels = options.resolved?.channels;
   if (!resolvedChannels) return;
 
   const dailyMessageChannel = resolvedChannels[channel.value];
-
 
   const messageData = await webHookManager.sendWebhookMessage(
     dailyMessageChannel.id,
@@ -158,11 +171,11 @@ export async function createStatusMessage(interaction: Interaction) {
           title: "Error",
           description: `Critical bug messageData.success isn't true`,
           color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -173,11 +186,11 @@ export async function createStatusMessage(interaction: Interaction) {
           title: "Error",
           description: `Critical bug messageData.message doesn't exists`,
           color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -193,21 +206,87 @@ export async function createStatusMessage(interaction: Interaction) {
         description: `Status Message created successfully`,
         color: 0x00FF00,
         footer: { text: interaction.client.user?.username || "Drunk Venti" },
-      })
+      }),
     ],
-    flags: InteractionResponseFlags.EPHEMERAL
-  })
-
+    flags: InteractionResponseFlags.EPHEMERAL,
+  });
 }
 
+//-----------------------
+
+function getNearestCharacter(input: string): [string] {
+  const nameMap = characterBuilds.getChars()?.map(
+    (x) => {
+      return {
+        name: x.name,
+        dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
+          ? 0
+          : editDist(input, x.name, input.length, x.name.length),
+      };
+    },
+  );
+  const differenceMap = nameMap?.sort((a, b) => a.dist - b.dist);
+
+  const nearests = differenceMap?.filter((x) =>
+    x.dist === differenceMap[0].dist
+  );
+
+  return <[string]>nearests?.map((x) => x.name).sort();
+}
+
+function createCharacterComponents(characters : [string]) : MessageComponentData[] {
+  if (characters.length > 25) return [];
+
+  const components : [MessageComponentData] = [<MessageComponentData>{}];
+  components.pop();
+
+  const rowNumber = Math.ceil(characters.length / 5.0);
+  for (let i = 0; i < rowNumber; i++){
+    components.push({type:1, components:[<MessageComponentBase>{}]})
+    components[i].components?.pop();
+  }
+
+  for (let i = 0; i < characters.length; i++){
+    components[i/5 | 0].components?.push({
+      type:2,
+      label:characters[i],
+      style:1,
+      customID: `char.${serialize(characters[i])}`
+    })
+  }
+  return components;
+}
+
+export async function getCharacterBuilds(interaction: Interaction) {
+  const options = <InteractionApplicationCommandData>interaction.data;
+  const name = <string>options.options.find((n) => n.name === "character")
+    ?.value;
+
+  if (!name) {
+    await interaction.respond({ content: "ERROR" });
+    return;
+  }
+
+  
+
+  await interaction.respond({
+    embeds: [{
+      title: "Select the wanted character.",
+    }],
+    ephemeral: true,
+    components: createCharacterComponents(getNearestCharacter(name))
+  })
+}
+
+//-----------------------
 
 export async function setNewsChannel(interaction: Interaction) {
-
-  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
+  const server = await Server.where("guild_id", interaction.guild?.id || "")
+    .first();
 
   const options = <InteractionApplicationCommandData>interaction.data;
 
-  const channel = options.options.find(e => e.name == "channel")
+  const channel = options.options.find((e) => e.name == "channel");
 
   if (server["news_channel"] == String(channel?.value)) {
     interaction.respond({
@@ -216,11 +295,11 @@ export async function setNewsChannel(interaction: Interaction) {
           title: "Set News Channel",
           description: `<#${channel?.value}> is already the News Channel.`,
           color: 0xffff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -229,13 +308,14 @@ export async function setNewsChannel(interaction: Interaction) {
       embeds: [
         new Embed({
           title: "Set News Channel",
-          description: `<#${channel?.value}> is already the Status Message Channel.`,
+          description: `<#${channel
+            ?.value}> is already the Status Message Channel.`,
           color: 0xffff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -249,24 +329,25 @@ export async function setNewsChannel(interaction: Interaction) {
         title: "Set News Channel",
         description: `<#${channel?.value}> is now set as the News Channel.`,
         color: 0x00FF00,
-        footer: { text: interaction.client.user?.username || "Drunk Venti" }
-      })
+        footer: { text: interaction.client.user?.username || "Drunk Venti" },
+      }),
     ],
-    flags: InteractionResponseFlags.EPHEMERAL
-  })
+    flags: InteractionResponseFlags.EPHEMERAL,
+  });
   return;
 }
 
-
 export async function addTwitterAccount(interaction: Interaction) {
-
-  const server = await Server.where("guild_id", interaction.guild?.id || "").first();
+  const server = await Server.where("guild_id", interaction.guild?.id || "")
+    .first();
 
   const options = <InteractionApplicationCommandData>interaction.data;
 
-  const account = options.options.find(e => e.name == "account");
+  const account = options.options.find((e) => e.name == "account");
 
-  const twitterAccount = String(<InteractionApplicationCommandData>account?.value);
+  const twitterAccount = String(
+    <InteractionApplicationCommandData>account?.value,
+  );
 
   if (!twitterAccount) {
     interaction.respond({
@@ -275,27 +356,27 @@ export async function addTwitterAccount(interaction: Interaction) {
           title: "Error",
           description: "Twitter account not provided.",
           color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
-
 
   if (!twitterAccount.match(/^[a-zA-Z0-9_]{0,15}$/)) {
     interaction.respond({
       embeds: [
         new Embed({
           title: "Error",
-          description: `${twitterAccount} doesn't match the format of a twitter account.`,
+          description:
+            `${twitterAccount} doesn't match the format of a twitter account.`,
           color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -306,11 +387,11 @@ export async function addTwitterAccount(interaction: Interaction) {
           title: "Add Twitter Account",
           description: `There isn't a News Channel set yet.`,
           color: 0xffff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -322,11 +403,13 @@ export async function addTwitterAccount(interaction: Interaction) {
             title: "Error",
             description: `${twitterAccount} accounts doesn't exist.`,
             color: 0xff0000,
-            footer: { text: interaction.client.user?.username || "Drunk Venti" }
-          })
+            footer: {
+              text: interaction.client.user?.username || "Drunk Venti",
+            },
+          }),
         ],
-        flags: InteractionResponseFlags.EPHEMERAL
-      })
+        flags: InteractionResponseFlags.EPHEMERAL,
+      });
       return;
     }
 
@@ -341,11 +424,13 @@ export async function addTwitterAccount(interaction: Interaction) {
             title: "Add Twitter Account",
             description: `${twitterAccount} is already tracked.`,
             color: 0xffff00,
-            footer: { text: interaction.client.user?.username || "Drunk Venti" }
-          })
+            footer: {
+              text: interaction.client.user?.username || "Drunk Venti",
+            },
+          }),
         ],
-        flags: InteractionResponseFlags.EPHEMERAL
-      })
+        flags: InteractionResponseFlags.EPHEMERAL,
+      });
       return;
     }
 
@@ -357,11 +442,13 @@ export async function addTwitterAccount(interaction: Interaction) {
               title: "Add Twitter Account",
               description: `${twitterAccount} is an invalid account.`,
               color: 0xffff00,
-              footer: { text: interaction.client.user?.username || "Drunk Venti" }
-            })
+              footer: {
+                text: interaction.client.user?.username || "Drunk Venti",
+              },
+            }),
           ],
-          flags: InteractionResponseFlags.EPHEMERAL
-        })
+          flags: InteractionResponseFlags.EPHEMERAL,
+        });
         return;
       }
 
@@ -382,24 +469,26 @@ export async function addTwitterAccount(interaction: Interaction) {
             title: "Add Twitter Account",
             description: `${twitterAccount} is now tracked !`,
             color: 0x00ff00,
-            footer: { text: interaction.client.user?.username || "Drunk Venti" }
-          })
+            footer: {
+              text: interaction.client.user?.username || "Drunk Venti",
+            },
+          }),
         ],
-        flags: InteractionResponseFlags.EPHEMERAL
-      })
+        flags: InteractionResponseFlags.EPHEMERAL,
+      });
       return;
     });
   });
 }
 
-
 export function removeTwitterAccount(interaction: Interaction) {
-
   const options = <InteractionApplicationCommandData>interaction.data;
 
-  const account = options.options.find(e => e.name == "account");
+  const account = options.options.find((e) => e.name == "account");
 
-  const twitterAccount = String(<InteractionApplicationCommandData>account?.value);
+  const twitterAccount = String(
+    <InteractionApplicationCommandData>account?.value,
+  );
 
   if (!twitterAccount) {
     interaction.respond({
@@ -408,11 +497,11 @@ export function removeTwitterAccount(interaction: Interaction) {
           title: "Error",
           description: "Twitter account not provided.",
           color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -421,13 +510,14 @@ export function removeTwitterAccount(interaction: Interaction) {
       embeds: [
         new Embed({
           title: "Error",
-          description: `${twitterAccount} doesn't match the format of a twitter account.`,
+          description:
+            `${twitterAccount} doesn't match the format of a twitter account.`,
           color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   }
 
@@ -439,11 +529,13 @@ export function removeTwitterAccount(interaction: Interaction) {
             title: "Error",
             description: `${twitterAccount} accounts doesn't exist.`,
             color: 0xff0000,
-            footer: { text: interaction.client.user?.username || "Drunk Venti" }
-          })
+            footer: {
+              text: interaction.client.user?.username || "Drunk Venti",
+            },
+          }),
         ],
-        flags: InteractionResponseFlags.EPHEMERAL
-      })
+        flags: InteractionResponseFlags.EPHEMERAL,
+      });
       return;
     }
 
@@ -458,11 +550,13 @@ export function removeTwitterAccount(interaction: Interaction) {
             title: "Remove Twitter Account",
             description: `${twitterAccount} isn't tracked.`,
             color: 0xffff00,
-            footer: { text: interaction.client.user?.username || "Drunk Venti" }
-          })
+            footer: {
+              text: interaction.client.user?.username || "Drunk Venti",
+            },
+          }),
         ],
-        flags: InteractionResponseFlags.EPHEMERAL
-      })
+        flags: InteractionResponseFlags.EPHEMERAL,
+      });
       return;
     }
 
@@ -483,11 +577,11 @@ export function removeTwitterAccount(interaction: Interaction) {
           title: "Remove Twitter Account",
           description: `${twitterAccount} is no longer tracked.`,
           color: 0x00ff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" }
-        })
+          footer: { text: interaction.client.user?.username || "Drunk Venti" },
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
     return;
   });
 }

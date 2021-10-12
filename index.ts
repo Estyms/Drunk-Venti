@@ -3,39 +3,52 @@ import { Twitter } from "./modules/twitter.ts";
 import { Server, Tweet } from "./modules/mongodb.ts";
 import { cron } from "./deps.ts";
 import {
+  Client,
   ClientActivity,
+  Embed,
+  event,
   GatewayIntents,
   Guild,
-  Role,
-  Client,
-  event,
-  slash,
   Interaction,
-  Embed,
   InteractionResponseFlags,
-  Member
+  Member,
+  Role,
+  slash,
 } from "./deps.ts";
 import { checkPerms, Permissions } from "./modules/utils/checkPerms.ts";
 import { webHookManager } from "./modules/utils/webhookManager.ts";
-import { commands, createStatusMessage, addTwitterAccount, removeTwitterAccount, setNewsChannel } from "./modules/commands.ts";
+import {
+  addTwitterAccount,
+  commands,
+  createStatusMessage,
+  getCharacterBuilds,
+  removeTwitterAccount,
+  setNewsChannel,
+} from "./modules/commands.ts";
+
+import { handleInterract } from "./modules/interactions.ts"
+
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
-
-
+import { characterBuilds } from "./modules/builds/characters.ts";
 
 export class DrunkVenti extends Client {
   // Bot startup function
   start() {
     // Tweets
+    /*
     this.checkTweets();
     cron("0/15 * * * *", () => {
       this.checkTweets();
     });
+    */
 
-    // Tweets
+    // Data
     dailyEvents.getEventsData();
+    characterBuilds.GetAllCharacters();
     cron("0 0/1 * * *", () => {
       dailyEvents.getEventsData();
+      characterBuilds.GetAllCharacters();
     });
 
     // Embed Messages Infos
@@ -52,14 +65,14 @@ export class DrunkVenti extends Client {
           GatewayIntents.GUILD_EMOJIS,
           GatewayIntents.GUILD_WEBHOOKS,
           GatewayIntents.GUILD_INTEGRATIONS,
-          GatewayIntents.GUILD_INTEGRATIONS
+          GatewayIntents.GUILD_INTEGRATIONS,
         ]);
       }
-    })
+    });
 
     cron("0/5 * * * *", () => {
       this.setActivity();
-    })
+    });
   }
 
   async asyncForEach<T>(array: T[], callback: (x: T) => Promise<void>) {
@@ -69,39 +82,52 @@ export class DrunkVenti extends Client {
   }
 
   async deleteGlobalCommands() {
-    const globalCommands = await (await this.interactions.commands.all()).map(x => { return { id: x.id, name: x.name } });
-    const exec = () => this.asyncForEach(globalCommands, async (x: { id: string, name: string }) => {
-      await this.interactions.commands.delete(x.id);
-    })
+    const globalCommands = await (await this.interactions.commands.all()).map(
+      (x) => {
+        return { id: x.id, name: x.name };
+      },
+    );
+    const exec = () =>
+      this.asyncForEach(
+        globalCommands,
+        async (x: { id: string; name: string }) => {
+          await this.interactions.commands.delete(x.id);
+        },
+      );
 
-    await exec()
+    await exec();
   }
-
-
 
   async deleteGuildCommands(guild: Guild) {
     let guildCommandsCollections;
     try {
-      guildCommandsCollections = await this.interactions.commands.guild(guild)
+      guildCommandsCollections = await this.interactions.commands.guild(guild);
     } catch (_) {
       return true;
     }
-    const guildCommands = await guildCommandsCollections.map(x => { return { id: x.id, name: x.name } });
-    const exec = () => this.asyncForEach(guildCommands, async (x: { id: string, name: string }) => {
-      if (!(await this.guilds.array()).find(x => x.id == guild.id)) return;
-      try {
-        await this.interactions.commands.delete(x.id, guild);
-      } catch (_) {
-        //
-      }
-    })
+    const guildCommands = await guildCommandsCollections.map((x) => {
+      return { id: x.id, name: x.name };
+    });
+    const exec = () =>
+      this.asyncForEach(
+        guildCommands,
+        async (x: { id: string; name: string }) => {
+          if (
+            !(await this.guilds.array()).find((x) => x.id == guild.id)
+          ) {
+            return;
+          }
+          try {
+            await this.interactions.commands.delete(x.id, guild);
+          } catch (_) {
+            //
+          }
+        },
+      );
 
-    await exec()
+    await exec();
 
     return false;
-
-
-
   }
 
   // Setups the commands
@@ -113,8 +139,8 @@ export class DrunkVenti extends Client {
           await this.interactions.commands.create(commands[i], guild);
         }
       } catch (e) {
-        console.error(e);
-        return true;
+        if ((e as Error).message.includes("address information")) Deno.exit(1);
+        return false;
       }
     }
     return false;
@@ -137,24 +163,28 @@ export class DrunkVenti extends Client {
         Permissions.MANAGE_MESSAGES,
       ], member)
     ) {
-      const ownerDM = await client.createDM(<string>guild.ownerID).catch((e) => { console.error(e); return undefined });
+      const ownerDM = await client.createDM(<string> guild.ownerID).catch(
+        (e) => {
+          console.error(e);
+          return undefined;
+        },
+      );
 
       if (!ownerDM) return;
 
-
       await ownerDM.send(
-        newServer ? "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``\nYou can use this link to invite me again : https://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684472320&scope=bot%20applications.commands"
-          : "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym."
+        newServer
+          ? "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``\nYou can use this link to invite me again : https://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684472320&scope=bot%20applications.commands"
+          : "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
       ).catch((e) => console.error(e));
       guild.leave().catch((e) => console.error(e));
     }
 
     if (!await Server.where("guild_id", guild.id).first()) {
       await Server.create([{
-        guild_id: guild.id
-      }])
+        guild_id: guild.id,
+      }]);
     }
-
   }
 
   // Checks if there are new tweets
@@ -183,7 +213,7 @@ export class DrunkVenti extends Client {
             return;
           }
         } catch {
-          console.error("No data")
+          console.error("No data");
           return;
         }
 
@@ -192,14 +222,13 @@ export class DrunkVenti extends Client {
           // Itterate over all servers
           serverList.forEach(async (server) => {
             if (
-              await client.guilds.get(<string>server["guild_id"]) === undefined
+              await client.guilds.get(<string> server["guild_id"]) === undefined
             ) {
               return;
             }
 
             // Send tweet in news channel
             Twitter.getUsername(String(tweet["user_id"])).then((userJSON) => {
-
               if (!userJSON) {
                 console.error("userJSON undefined");
                 return;
@@ -207,7 +236,8 @@ export class DrunkVenti extends Client {
 
               this.postMessage(
                 String(server["news_channel"]),
-                `https://twitter.com/${userJSON["data"]["username"]}/status/${json["data"][0]["id"]
+                `https://twitter.com/${userJSON["data"]["username"]}/status/${
+                  json["data"][0]["id"]
                 }`,
               );
 
@@ -225,7 +255,9 @@ export class DrunkVenti extends Client {
 
   // Send message to channel
   postMessage(channelId: string, message: string) {
-    client.channels.sendMessage(channelId, message).catch((e) => console.error(e));
+    client.channels.sendMessage(channelId, message).catch((e) =>
+      console.error(e)
+    );
   }
 
   unsufficientPermissions(interaction: Interaction) {
@@ -235,13 +267,12 @@ export class DrunkVenti extends Client {
           footer: { text: interaction.client.user?.username || "Drunk Venti" },
           color: 0xff0000,
           description: "You are not an administrator.",
-          title: "Unsufficient Permissions"
-        })
+          title: "Unsufficient Permissions",
+        }),
       ],
-      flags: InteractionResponseFlags.EPHEMERAL
-    })
+      flags: InteractionResponseFlags.EPHEMERAL,
+    });
   }
-
 
   async setActivity() {
     const activity: ClientActivity = {
@@ -249,13 +280,13 @@ export class DrunkVenti extends Client {
       since: 0,
       afk: false,
       activity: {
-        name: `Drinking in ${await (await this.guilds.array()).length} servers !`,
+        name: `Drinking in ${await (await this.guilds.array())
+          .length} servers !`,
         type: "PLAYING",
-      }
+      },
     };
     this.setPresence(activity);
   }
-
 
   @event("ready")
   ready() {
@@ -268,32 +299,35 @@ export class DrunkVenti extends Client {
 
   @event("guildLoaded")
   async guildLoaded(guild: Guild) {
-
     await this.checkGuild(guild, true);
-
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
       try {
-        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => await guild.leave()))
-      } catch (_) {/** */ }
+        await this.createDM(guild.ownerID || "").then((x) =>
+          x.send(
+            "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
+          ).then(async () => await guild.leave())
+        );
+      } catch (_) { /** */ }
       return;
     }
   }
 
   @event("guildCreate")
   async guildCreate(guild: Guild) {
-
     await this.checkGuild(guild, false);
 
     if (await this.createCommands(guild)) {
       console.log(`Quitting ${guild.name}`);
       try {
-        await this.createDM(guild.ownerID || "").then((x) => x.send("Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.").then(async() => await guild.leave()))
-      } catch (_) {/** */ }
+        await this.createDM(guild.ownerID || "").then((x) =>
+          x.send(
+            "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
+          ).then(async () => await guild.leave())
+        );
+      } catch (_) { /** */ }
       return;
     }
-
-
 
     const server = await Server.where("guild_id", String(guild.id)).first();
 
@@ -301,9 +335,9 @@ export class DrunkVenti extends Client {
 
     if (server["daily_message_channel"] && server["daily_message_id"]) {
       const message = await webHookManager.getMessage(
-        <string>server["daily_message_channel"],
-        <string>server["daily_message_id"],
-      ).catch(_ => { })
+        <string> server["daily_message_channel"],
+        <string> server["daily_message_id"],
+      ).catch((_) => {});
 
       if (message) message.delete().catch((e) => console.error(e));
     }
@@ -313,7 +347,7 @@ export class DrunkVenti extends Client {
       server["news_channel"]
         ? [{
           guild_id: String(guild.id),
-          news_channel: <string>server["news_channel"],
+          news_channel: <string> server["news_channel"],
         }]
         : [{
           guild_id: String(guild.id),
@@ -326,20 +360,46 @@ export class DrunkVenti extends Client {
     this.checkGuild(guild, false);
   }
 
-
   @slash("createstatusmessage")
   CSM(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
-      this.unsufficientPermissions(interaction)
+    if (
+      !checkPerms(
+        [Permissions.ADMINISTRATOR],
+        <Member> interaction.member,
+        true,
+      )
+    ) {
+      this.unsufficientPermissions(interaction);
       return;
     }
-    createStatusMessage(interaction)
+    createStatusMessage(interaction);
+  }
+
+  @slash("characterbuilds")
+  CB(interaction: Interaction) {
+    console.log(interaction);
+    getCharacterBuilds(interaction);
+  }
+
+  @event("interactionCreate")
+  IC(interaction: Interaction) {
+    if (interaction.isApplicationCommand()) {
+      return;
+    } else if (interaction.isMessageComponent()) {
+      handleInterract(interaction);
+    }
   }
 
   @slash("addtwitteraccount")
   ATA(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
-      this.unsufficientPermissions(interaction)
+    if (
+      !checkPerms(
+        [Permissions.ADMINISTRATOR],
+        <Member> interaction.member,
+        true,
+      )
+    ) {
+      this.unsufficientPermissions(interaction);
       return;
     }
     addTwitterAccount(interaction);
@@ -347,8 +407,14 @@ export class DrunkVenti extends Client {
 
   @slash("removetwitteraccount")
   RTA(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
-      this.unsufficientPermissions(interaction)
+    if (
+      !checkPerms(
+        [Permissions.ADMINISTRATOR],
+        <Member> interaction.member,
+        true,
+      )
+    ) {
+      this.unsufficientPermissions(interaction);
       return;
     }
     removeTwitterAccount(interaction);
@@ -356,29 +422,29 @@ export class DrunkVenti extends Client {
 
   @slash("setnewschannel")
   SNC(interaction: Interaction) {
-    if (!checkPerms([Permissions.ADMINISTRATOR], <Member>interaction.member, true)) {
-      this.unsufficientPermissions(interaction)
+    if (
+      !checkPerms(
+        [Permissions.ADMINISTRATOR],
+        <Member> interaction.member,
+        true,
+      )
+    ) {
+      this.unsufficientPermissions(interaction);
       return;
     }
     setNewsChannel(interaction);
   }
-
-
 }
-
-
 
 /**
  * Checks if there is tweets to send, and if so, send them
  */
-
 
 /**
  * Easy wrapper to send a message in a channel
  * @param channelId Channel where you want to send the message
  * @param message Message you wanna send
  */
-
 
 const client = new DrunkVenti();
 
@@ -389,5 +455,3 @@ client.connect(Deno.env.get("DISCORD_TOKEN"), [
   GatewayIntents.GUILD_WEBHOOKS,
   GatewayIntents.GUILD_INTEGRATIONS,
 ]);
-
-
