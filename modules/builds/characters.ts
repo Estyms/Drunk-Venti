@@ -16,7 +16,13 @@ interface Character {
 
 
 class CharactersBuilds {
-    async GetAllCharacters(): Promise<[Character]> {
+
+    private characterState = false;
+    private characters : [Character] | undefined;
+
+    async GetAllCharacters(): Promise<void> {
+        this.characterState = false;
+        interface RolesJSO { [index: string]: { roles: Record<string, unknown> } }
         // deno-lint-ignore prefer-const
         let characters: Record<string, unknown> = {};
         eval(
@@ -27,33 +33,44 @@ class CharactersBuilds {
         );
 
 
-        const charactersName = Object.keys(characters as Record<string, unknown>);
+        const charactersNames = Object.keys(characters);
 
-        const characterData = charactersName.map(x => {
-            const roleNames = Object.keys((characters as unknown as { [index: string]: { roles: Record<string, unknown> } })[x].roles);
-            const editedRoles = roleNames.map(y => {
-                const z = (characters as unknown as { [index: string]: { roles: Record<string, unknown> } })[x].roles[y] as unknown as CharacterBuild;
-                z.type = y;
-                return z
+        const characterData = charactersNames.map(characterName => {
+            const roleNames = Object.keys((<RolesJSO>characters)[characterName].roles);
+            const editedRoles = roleNames.map(roleName => {
+                const role = <CharacterBuild>(<RolesJSO>characters)[characterName].roles[roleName];
+                role.type = roleName;
+                return role
             })
 
-            return { name: x, roles: editedRoles };
+            const capitalizedCharacterName = characterName.split("_").map(x=>x.charAt(0).toUpperCase() + x.slice(1)).join(" ")
+
+            return { name: capitalizedCharacterName, roles: editedRoles };
         })
 
-        return characterData as unknown as [Character];
+        this.characters = <[Character]>characterData;
+        this.characterState = true;
     }
-}
+
+    getChars = () => {
+        return this.characters;
+    }
+
+    isChar = (id: string) : boolean => {
+        return this.characters?.some(x=>x.name===this.getNameFromId(id)) || false;
+    }
+
+    getNameFromId = (id : string) : string => {
+        return id.split("_").map(w=>w.charAt(0).toUpperCase() + w.substr(1)).join(" ");
+    }
+
+    getCharacterBuilds = (char : string)=>{
+        return <[CharacterBuild]>this.characters?.find(x=>x.name == char)?.roles
+    }
+
+}   
 
 
 const characterBuilds = new CharactersBuilds();
-
-
-async function testtt() {
-    const data = await characterBuilds.GetAllCharacters();
-    console.log(JSON.stringify(data))
-}
-
-testtt();
-
 
 export { characterBuilds }
