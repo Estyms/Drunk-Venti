@@ -6,14 +6,14 @@ import {
   Interaction,
   InteractionApplicationCommandData,
   InteractionResponseFlags,
+  MessageComponentBase,
+  MessageComponentData,
   SlashCommandOptionType,
   SlashCommandPartial,
-  MessageComponentData,
-  MessageComponentBase
 } from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
 import { characterBuilds } from "./builds/characters.ts";
-import { editDist, serialize } from "./utils/stringRelated.ts";
+import { serialize } from "./utils/stringRelated.ts";
 
 // Every command descriptions
 export const commands: SlashCommandPartial[] = [
@@ -86,7 +86,7 @@ export async function createStatusMessage(interaction: Interaction) {
   const server = await Server.where("guild_id", interaction.guild?.id || "")
     .first();
 
-  const options = <InteractionApplicationCommandData>interaction.data;
+  const options = <InteractionApplicationCommandData> interaction.data;
 
   const channel = options.options.find((e) => e.name == "channel");
 
@@ -105,7 +105,7 @@ export async function createStatusMessage(interaction: Interaction) {
     return;
   }
 
-  await webHookManager.createChannelWebhook(<string>channel.value);
+  await webHookManager.createChannelWebhook(<string> channel.value);
 
   if (server["news_channel"] == String(channel.value)) {
     interaction.respond({
@@ -126,8 +126,8 @@ export async function createStatusMessage(interaction: Interaction) {
   if (server["daily_message_id"]) {
     try {
       const message = await webHookManager.getWebhookMessage(
-        <string>server["daily_message_channel"],
-        <string>server["daily_message_id"],
+        <string> server["daily_message_channel"],
+        <string> server["daily_message_id"],
       );
       if (message) {
         message.delete();
@@ -194,7 +194,7 @@ export async function createStatusMessage(interaction: Interaction) {
     return;
   }
 
-  Server.where("guild_id", <string>interaction.guild?.id || "").update({
+  Server.where("guild_id", <string> interaction.guild?.id || "").update({
     daily_message_channel: String(messageData.message.channelID),
     daily_message_id: String(messageData.message.id),
   });
@@ -214,68 +214,62 @@ export async function createStatusMessage(interaction: Interaction) {
 
 //-----------------------
 
-function getNearestCharacter(input: string): [string] {
-  const nameMap = characterBuilds.getChars()?.map(
-    (x) => {
-      return {
-        name: x.name,
-        dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
-          ? 0
-          : editDist(input, x.name, input.length, x.name.length),
-      };
-    },
-  );
-  const differenceMap = nameMap?.sort((a, b) => a.dist - b.dist);
-
-  const nearests = differenceMap?.filter((x) =>
-    x.dist === differenceMap[0].dist
-  );
-
-  return <[string]>nearests?.map((x) => x.name).sort();
-}
-
-function createCharacterComponents(characters : [string]) : MessageComponentData[] {
+function createCharacterComponents(
+  characters: [string],
+): MessageComponentData[] {
   if (characters.length > 25) return [];
 
-  const components : [MessageComponentData] = [<MessageComponentData>{}];
+  const components: [MessageComponentData] = [<MessageComponentData> {}];
   components.pop();
 
   const rowNumber = Math.ceil(characters.length / 5.0);
-  for (let i = 0; i < rowNumber; i++){
-    components.push({type:1, components:[<MessageComponentBase>{}]})
+  for (let i = 0; i < rowNumber; i++) {
+    components.push({ type: 1, components: [<MessageComponentBase> {}] });
     components[i].components?.pop();
   }
 
-  for (let i = 0; i < characters.length; i++){
-    components[i/5 | 0].components?.push({
-      type:2,
-      label:characters[i],
-      style:1,
-      customID: `char.${serialize(characters[i])}`
-    })
+  for (let i = 0; i < characters.length; i++) {
+    components[i / 5 | 0].components?.push({
+      type: 2,
+      label: characters[i],
+      style: 1,
+      customID: `char.${serialize(characters[i])}`,
+    });
   }
   return components;
 }
 
 export async function getCharacterBuilds(interaction: Interaction) {
-  const options = <InteractionApplicationCommandData>interaction.data;
-  const name = <string>options.options.find((n) => n.name === "character")
+  const options = <InteractionApplicationCommandData> interaction.data;
+  const name = <string> options.options.find((n) => n.name === "character")
     ?.value;
 
-  if (!name) {
-    await interaction.respond({ content: "ERROR" });
+  const characterList = characterBuilds.getNearestCharacter(name);
+
+  if (characterList.length > 25) {
+    await interaction.respond(
+      {
+        embeds: [
+          {
+            title: "An error has occured",
+            color: 0xff0000,
+            description:
+              "Too many character found, please try a more accurate name.",
+          },
+        ],
+        ephemeral: true
+      },
+    );
     return;
+  } else {
+    await interaction.respond({
+      embeds: [{
+        title: "Select the wanted character.",
+      }],
+      ephemeral: true,
+      components: createCharacterComponents(characterList),
+    });
   }
-
-  
-
-  await interaction.respond({
-    embeds: [{
-      title: "Select the wanted character.",
-    }],
-    ephemeral: true,
-    components: createCharacterComponents(getNearestCharacter(name))
-  })
 }
 
 //-----------------------
@@ -284,7 +278,7 @@ export async function setNewsChannel(interaction: Interaction) {
   const server = await Server.where("guild_id", interaction.guild?.id || "")
     .first();
 
-  const options = <InteractionApplicationCommandData>interaction.data;
+  const options = <InteractionApplicationCommandData> interaction.data;
 
   const channel = options.options.find((e) => e.name == "channel");
 
@@ -341,12 +335,12 @@ export async function addTwitterAccount(interaction: Interaction) {
   const server = await Server.where("guild_id", interaction.guild?.id || "")
     .first();
 
-  const options = <InteractionApplicationCommandData>interaction.data;
+  const options = <InteractionApplicationCommandData> interaction.data;
 
   const account = options.options.find((e) => e.name == "account");
 
   const twitterAccount = String(
-    <InteractionApplicationCommandData>account?.value,
+    <InteractionApplicationCommandData> account?.value,
   );
 
   if (!twitterAccount) {
@@ -482,12 +476,12 @@ export async function addTwitterAccount(interaction: Interaction) {
 }
 
 export function removeTwitterAccount(interaction: Interaction) {
-  const options = <InteractionApplicationCommandData>interaction.data;
+  const options = <InteractionApplicationCommandData> interaction.data;
 
   const account = options.options.find((e) => e.name == "account");
 
   const twitterAccount = String(
-    <InteractionApplicationCommandData>account?.value,
+    <InteractionApplicationCommandData> account?.value,
   );
 
   if (!twitterAccount) {

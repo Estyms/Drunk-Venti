@@ -26,7 +26,7 @@ import {
   setNewsChannel,
 } from "./modules/commands.ts";
 
-import { handleInterract } from "./modules/interactions.ts"
+import { handleInterract } from "./modules/interactions.ts";
 
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
@@ -86,72 +86,52 @@ export class DrunkVenti extends Client {
       (x) => {
         return { id: x.id, name: x.name };
       },
-    );
+    ).filter((x) => !commands.find((y) => y.name != x.name));
     const exec = () =>
       this.asyncForEach(
         globalCommands,
         async (x: { id: string; name: string }) => {
           await this.interactions.commands.delete(x.id);
+          this.interactions.commands.all();
+          console.log(`Deleted ${x.name}`)
         },
       );
 
     await exec();
   }
 
-  async deleteGuildCommands(guild: Guild) {
-    let guildCommandsCollections;
-    try {
-      guildCommandsCollections = await this.interactions.commands.guild(guild);
-    } catch (_) {
-      return true;
-    }
-    const guildCommands = await guildCommandsCollections.map((x) => {
-      return { id: x.id, name: x.name };
-    });
-    const exec = () =>
-      this.asyncForEach(
-        guildCommands,
-        async (x: { id: string; name: string }) => {
-          if (
-            !(await this.guilds.array()).find((x) => x.id == guild.id)
-          ) {
-            return;
-          }
-          try {
-            await this.interactions.commands.delete(x.id, guild);
-          } catch (_) {
-            //
-          }
-        },
-      );
-
-    await exec();
-
-    return false;
-  }
-
-  // Setups the commands
-  async createCommands(guild: Guild) {
-    if (await this.deleteGuildCommands(guild)) return true;
+  async initCommands() {
+    await this.deleteGlobalCommands();
     for (let i = 0; i < commands.length; i++) {
       try {
-        if (guild) {
-          await this.interactions.commands.create(commands[i], guild);
+        if (
+          !(await this.interactions.commands.all()).find((x) =>
+            x.name == commands[i].name
+          )
+        ) {
+          await this.interactions.commands.create(commands[i]);
+          console.log(`Created ${commands[i].name}`);
         }
       } catch (e) {
-        if ((e as Error).message.includes("address information")) Deno.exit(1);
-        return false;
+        console.log(e);
       }
     }
-    return false;
   }
 
   // Checks if a guild is configured properly
-  async checkGuild(guild: Guild | Role, newServer: boolean) {
+  async checkGuild(guild: Guild | Role) {
     if (guild instanceof Role) guild = guild.guild;
     const member = await guild.me();
+    let check = false;
+
+    try {
+      await this.interactions.commands.for(guild).all();
+    } catch {
+      check = true;
+    }
 
     if (
+      check ||
       !checkPerms([
         Permissions.MANAGE_WEBHOOKS,
         Permissions.SEND_MESSAGES,
@@ -173,9 +153,8 @@ export class DrunkVenti extends Client {
       if (!ownerDM) return;
 
       await ownerDM.send(
-        newServer
-          ? "Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : ``Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files and Use Slash Commands``\nYou can use this link to invite me again : https://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684472320&scope=bot%20applications.commands"
-          : "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
+        `Please give me all the permissions I need ! Without them I wont be able to fulfill my purpose.\nThe permissions I require are the following ones : \`\`Manage Webhook, Send Message, Read Message History, Embed Links, Attach Files, Manage Messages, View Channels and Use Slash Commands\`\`\nYou can use this link to invite me again : https://discord.com/api/oauth2/authorize?client_id=${this
+          .user?.id}&permissions=2684480512&scope=bot%20applications.commands`,
       ).catch((e) => console.error(e));
       guild.leave().catch((e) => console.error(e));
     }
@@ -280,8 +259,10 @@ export class DrunkVenti extends Client {
       since: 0,
       afk: false,
       activity: {
-        name: `Drinking in ${await (await this.guilds.array())
-          .length} servers !`,
+        name: `Drinking in ${
+          (await this.guilds.array())
+            .length
+        } servers !`,
         type: "PLAYING",
       },
     };
@@ -290,44 +271,22 @@ export class DrunkVenti extends Client {
 
   @event("ready")
   ready() {
-    console.log("Bot Ready !");
-    this.deleteGlobalCommands();
-    this.setActivity();
-    webHookManager.create(this);
-    this.start();
+    this.initCommands().then((_) => {
+      console.log("Bot Ready !");
+      this.setActivity();
+      webHookManager.create(this);
+      this.start();
+    });
   }
 
   @event("guildLoaded")
   async guildLoaded(guild: Guild) {
-    await this.checkGuild(guild, true);
-    if (await this.createCommands(guild)) {
-      console.log(`Quitting ${guild.name}`);
-      try {
-        await this.createDM(guild.ownerID || "").then((x) =>
-          x.send(
-            "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
-          ).then(async () => await guild.leave())
-        );
-      } catch (_) { /** */ }
-      return;
-    }
+    await this.checkGuild(guild);
   }
 
   @event("guildCreate")
   async guildCreate(guild: Guild) {
-    await this.checkGuild(guild, false);
-
-    if (await this.createCommands(guild)) {
-      console.log(`Quitting ${guild.name}`);
-      try {
-        await this.createDM(guild.ownerID || "").then((x) =>
-          x.send(
-            "Please add back the bot with the updated permission!\nThere'll be no need to reconfigure I guess.. Appart from the status message.\nhttps://discord.com/api/oauth2/authorize?client_id=860120094633623552&permissions=2684480512&scope=bot%20applications.commands\n\nSincerely, Estym.",
-          ).then(async () => await guild.leave())
-        );
-      } catch (_) { /** */ }
-      return;
-    }
+    await this.checkGuild(guild);
 
     const server = await Server.where("guild_id", String(guild.id)).first();
 
@@ -356,8 +315,8 @@ export class DrunkVenti extends Client {
   }
 
   @event("guildRoleUpdate")
-  guildRoleUpdate(guild: Guild) {
-    this.checkGuild(guild, false);
+  async guildRoleUpdate(guild: Guild) {
+    await this.checkGuild(guild);
   }
 
   @slash("createstatusmessage")
@@ -377,15 +336,12 @@ export class DrunkVenti extends Client {
 
   @slash("characterbuilds")
   CB(interaction: Interaction) {
-    console.log(interaction);
     getCharacterBuilds(interaction);
   }
 
   @event("interactionCreate")
   IC(interaction: Interaction) {
-    if (interaction.isApplicationCommand()) {
-      return;
-    } else if (interaction.isMessageComponent()) {
+    if (interaction.isMessageComponent()) {
       handleInterract(interaction);
     }
   }
@@ -435,16 +391,6 @@ export class DrunkVenti extends Client {
     setNewsChannel(interaction);
   }
 }
-
-/**
- * Checks if there is tweets to send, and if so, send them
- */
-
-/**
- * Easy wrapper to send a message in a channel
- * @param channelId Channel where you want to send the message
- * @param message Message you wanna send
- */
 
 const client = new DrunkVenti();
 
