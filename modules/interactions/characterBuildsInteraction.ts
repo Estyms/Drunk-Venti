@@ -138,7 +138,10 @@ function homeEmbed(
         {
           name: "Best Artifacts",
           value: build.artifacts.length
-            ? `${build.artifacts[0].map((x) => deserialize(x)).join(" & ")}`
+            ? ((build.artifacts[0].length > 2 ? "Choose 2 : " : "") +
+            (build.artifacts[0].map((y) => deserialize(y) + ((<string[]>build.artifacts[0]).length - 1 ? " (2)" : " (4)")).join
+              (build.artifacts[0].length > 2 ? " or " : " & ")
+            ))
             : "TBD",
         },
         { name: "Circlet", value: build.mainStats.circlet, inline: true },
@@ -183,15 +186,15 @@ function artifactsEmbed(
       fields: [
         {
           name: "Artifacts",
-          value: build.artifacts.map((x) =>
-            x.map((y) => (x.length - 1 ? "2 " : "4 ") + deserialize(y)).join(
-              " & ",
+          value: build.artifacts.map((x,i) => `**${i+1}. **` + (x.length > 2 ? "Choose 2 : " : "") +
+            x.map((y) => deserialize(y) + (x.length - 1 ? " (2)" : " (4)")).join(
+              (x.length > 2 ? " / " : " & "),
             )
           ).join("\n"),
         },
         {
           name: "Sub Stats",
-          value: `${build.subStats.join(" > ")}`,
+          value: `${build.subStats.map((x,i) => `**${i+1}. ** ${x}` ).join("\n")}`,
         },
         { name: "Circlet", value: build.mainStats.circlet, inline: true },
         { name: "Goblet", value: build.mainStats.goblet, inline: true },
@@ -235,7 +238,7 @@ function weaponsEmbed(
       fields: [
         {
           name: "Weapons",
-          value: build.weapons.map((x) => deserialize(x.id)).join("\n"),
+          value: build.weapons.map((x,i) => `**${i+1}. **` + deserialize(x.id)).join("\n"),
         },
       ],
       footer: {
