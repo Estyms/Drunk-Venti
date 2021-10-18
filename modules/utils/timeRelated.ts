@@ -55,7 +55,7 @@ function parseTime(time: string): Date {
   if (!result) return new Date();
 
   const [year, month, day, hour, minute, seconds] = result.slice(1).map((x)=> Number.parseInt(x));
-
+  
   return new Date(Date.UTC(year, month-1, day, hour, minute, seconds));
 }
 
