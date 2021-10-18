@@ -1,9 +1,9 @@
 import {
+  GenshinServer,
   parseTime,
   UTCToServerTime,
-  GenshinServer
 } from "../utils/timeRelated.ts";
-import { Embed, EmbedField } from "../../deps.ts";
+import { AsyncFunction, Embed, EmbedField } from "../../deps.ts";
 
 interface eventData {
   currents: eventItem[];
@@ -31,90 +31,75 @@ class dailyEvents {
     this.getEventsData();
   }
 
-
   /**
- *  Gets all the events of the game
- */
+   *  Gets all the events of the game
+   */
   async getAllEvents(): Promise<eventItems> {
-    // deno-lint-ignore prefer-const
-    let allEvents: eventItems | undefined;
-    eval(
-      "allEvents " +
-      (await (await (await fetch(
+    const allEvents: eventItems = await new AsyncFunction(
+      (await (await fetch(
         "https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/timeline.js",
-      )).text()).replace("export const eventsData", "")),
-    );
+      )).text()).replace("export const eventsData = ", "return"),
+    )();
 
-
-    allEvents = allEvents as eventItems;
-
-    return allEvents;
+    return allEvents as eventItems;
   }
 
   /**
- * Gets all the current event from a list of events
- * @param allEvents List of all the events we want to check
- */
+   * Gets all the current event from a list of events
+   * @param allEvents List of all the events we want to check
+   */
   getCurrentEventsData(allEvents: eventItem[]): eventItem[] {
     const date = new Date();
-    date.setHours(date.getHours() + date.getTimezoneOffset() / 60)
-
-
-
+    date.setHours(date.getHours() + date.getTimezoneOffset() / 60);
 
     const CurrentEvents = allEvents.filter((event) =>
-      date.getTime() / 1000 > <number>event.start &&
-      date.getTime() / 1000 < <number>event.end
+      date.getTime() / 1000 > <number> event.start &&
+      date.getTime() / 1000 < <number> event.end
     );
-    CurrentEvents.sort((a, b) =>
-      <number>a.end - <number>b.end
-    );
+    CurrentEvents.sort((a, b) => <number> a.end - <number> b.end);
     CurrentEvents.sort((a, b) => (a.url ? 0 : 1) - (b.url ? 0 : 1));
-
 
     return CurrentEvents;
   }
 
   /**
- * Gets the nearest upcomming Event from a list of event
- * @param allEvents List of all the events we want to check
- */
+   * Gets the nearest upcomming Event from a list of event
+   * @param allEvents List of all the events we want to check
+   */
   getUpcommingEvent(allEvents: eventItem[]): eventItem {
     const date = new Date();
 
     let UpcommingEvents = allEvents.filter((event) =>
-      date.getTime() / 1000 < <number>event.start
+      date.getTime() / 1000 < <number> event.start
     );
     UpcommingEvents = UpcommingEvents.sort((a, b) =>
-      <number>a.start - <number>b.start
+      <number> a.start - <number> b.start
     );
 
     const UpcommingEvent = UpcommingEvents[0];
     return UpcommingEvent;
   }
 
-
   formatTime(allEvents: eventItem[], server: GenshinServer) {
-    return allEvents.map(event => {
+    return allEvents.map((event) => {
       const x = event;
       if (x.timezoneDependant) {
-        x.start = UTCToServerTime(parseTime(<string>x.start), server);
-        x.end = parseTime(<string>x.end).getTime() / 1000;
+        x.start = UTCToServerTime(parseTime(<string> x.start), server);
+        x.end = parseTime(<string> x.end).getTime() / 1000;
       } else {
-        x.start = parseTime(<string>x.start).getTime() / 1000;
-        x.end = parseTime(<string>x.end).getTime() / 1000;
+        x.start = parseTime(<string> x.start).getTime() / 1000;
+        x.end = parseTime(<string> x.end).getTime() / 1000;
       }
 
       return event;
-    })
+    });
   }
 
-
   /**
- * Gets all the data needed Event wise
- */
+   * Gets all the data needed Event wise
+   */
   async getEventsData(): Promise<void> {
-    let allEvents = await (await this.getAllEvents()).flat(2);
+    let allEvents = (await this.getAllEvents()).flat(2);
     allEvents = this.formatTime(allEvents, GenshinServer.Europe);
 
     const currentEvents = this.getCurrentEventsData(allEvents);
@@ -122,19 +107,18 @@ class dailyEvents {
     const upcommingEvent = this.getUpcommingEvent(allEvents);
 
     this.AllEvents = { currents: currentEvents, upcomming: upcommingEvent };
-
   }
 
   /**
- * Creates the Embed messages for all the events
- */
+   * Creates the Embed messages for all the events
+   */
   async createEmbedEvents() {
     this.AllEvents || await this.getEventsData();
     const EventData: eventData = this.AllEvents as eventData;
     const EmbedMessages: Embed[] = [];
 
     // Current Major Events
-    this.AllEvents?.currents.filter(e => e.url).forEach(event => {
+    this.AllEvents?.currents.filter((e) => e.url).forEach((event) => {
       EmbedMessages.push(
         new Embed({
           title: event.name,
@@ -174,10 +158,12 @@ class dailyEvents {
     const nextUpdate = this.getDateOfNextUpdate();
     EmbedMessages.push(
       EventData.upcomming?.start &&
-        <number>EventData.upcomming.start < nextUpdate.getTime() / 1000
+        <number> EventData.upcomming.start < nextUpdate.getTime() / 1000
         ? new Embed({
           title: "SOON : " + EventData.upcomming.name,
-          url: EventData.upcomming.url ? EventData.upcomming.url + "?".repeat(EmbedMessages.length) : undefined,
+          url: EventData.upcomming.url
+            ? EventData.upcomming.url + "?".repeat(EmbedMessages.length)
+            : undefined,
           image: EventData.upcomming.image
             ? {
               url:
@@ -194,20 +180,19 @@ class dailyEvents {
         }),
     );
 
-
     return EmbedMessages;
   }
 
   /**
- * Gets the date of the next Update
- */
+   * Gets the date of the next Update
+   */
   getDateOfNextUpdate() {
     // Date of the 1.5 Update for reference
     const referenceUpdate = new Date(Date.UTC(2021, 3, 28, 6, 0, 0, 0));
 
     // Gets today date
     const today = new Date();
-    today.setHours(today.getHours() + today.getTimezoneOffset() / 60)
+    today.setHours(today.getHours() + today.getTimezoneOffset() / 60);
     // Gets the time between today and the reference Update
 
     while (referenceUpdate.getTime() / 1000 < today.getTime() / 1000) {

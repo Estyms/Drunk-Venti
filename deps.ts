@@ -1,39 +1,38 @@
 import "https://deno.land/x/dotenv@v3.0.0/load.ts";
 export {
-  Embed,
-  GatewayIntents,
-  Message,
-  MessagesManager,
-  RESTEndpoints,
-  RESTManager,
-  User,
-  Webhook,
-  PermissionFlags,
-  Guild,
-  Role,
-  TextChannel,
   Client,
+  Embed,
   event,
-  SlashCommandOptionType,
-  slash,
+  GatewayIntents,
+  Guild,
   InteractionChannel,
   InteractionResponseFlags,
-  
+  Message,
+  MessagesManager,
+  PermissionFlags,
+  RESTEndpoints,
+  RESTManager,
+  Role,
+  slash,
+  SlashCommandOptionType,
+  TextChannel,
+  User,
+  Webhook,
 } from "https://deno.land/x/harmony@v2.2.0/mod.ts";
 export type {
   ClientActivity,
   EmbedField,
   EmbedPayload,
+  Interaction,
+  InteractionApplicationCommandData,
+  InteractionMessageComponentData,
+  InteractionType,
+  Member,
+  MessageComponentBase,
+  MessageComponentData,
+  SlashCommandPartial,
   UserPayload,
   WebhookPayload,
-  Member,
-  SlashCommandPartial,
-  Interaction,
-  InteractionType,
-  InteractionApplicationCommandData,
-  MessageComponentData,
-  MessageComponentBase,
-  InteractionMessageComponentData
 } from "https://deno.land/x/harmony@v2.2.0/mod.ts";
 
 export {
@@ -48,3 +47,5 @@ import {
 export { DataTypes, Model };
 export { cron, daily } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
 export { fetchAuto } from "https://deno.land/x/fetchbase64@1.0.0/mod.ts";
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+export { AsyncFunction };
