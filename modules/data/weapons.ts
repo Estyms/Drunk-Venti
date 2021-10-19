@@ -1,5 +1,5 @@
 import { AsyncFunction } from "../../deps.ts";
-import { ItemsClass, ItemType } from "./items.ts";
+import { itemClass, ItemType } from "./items.ts";
 
 const weapons = {
   sword: {
@@ -43,24 +43,27 @@ class WeaponClass {
   private weaponList: WeaponsType = {};
 
   async initWeapons() {
+
+    if (itemClass.getItems() === {}) await itemClass.initItems();
+
     let func = (await (await fetch(
       "https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/weaponList.js",
     )).text());
     func = func.substr(func.indexOf("export const weaponList ="));
     this.weaponList = await new AsyncFunction("weapons", "itemList",
       func.replace("export const weaponList = ", "return"),
-    )(weapons, ItemsClass.getItems());
+    )(weapons, itemClass.getItems());
   }
 
-  getItems() {
+  getWeapons() {
     return this.weaponList;
   }
-  getItem(id: string) {
+  getWeapon(id: string) {
     return this.weaponList[id];
   }
 }
 
-const Weapons = new WeaponClass();
-Weapons.initWeapons().then(_=>console.log(Weapons.getItems()))
+const weaponClass = new WeaponClass();
 
+export {weaponClass};
 export type {WeaponType, WeaponsType}

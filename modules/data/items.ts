@@ -12,7 +12,7 @@ interface ItemsType {
   [id: string]: ItemType;
 }
 
-class itemClass {
+class ItemClass {
   private itemList: ItemsType = {};
 
   async initItems() {
@@ -31,7 +31,7 @@ class itemClass {
   }
 }
 
-const ItemsClass = new itemClass();
+const itemClass = new ItemClass();
 
-export { ItemsClass };
+export { itemClass };
 export type { ItemsType, ItemType };
