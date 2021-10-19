@@ -49,7 +49,7 @@ class CharactersBuilds {
 
   async GetAllCharacters(): Promise<void> {
 
-    if(elementClass.getElements() == {}) await elementClass.initElements();
+    if(Object.keys(elementClass.getElements()).length === 0) await elementClass.initElements();
 
     this.characterState = false;
     interface RolesJSO {
@@ -80,10 +80,9 @@ class CharactersBuilds {
         const capitalizedCharacterName = deserialize(characterName);
 
         const visionName = (await this.fetchCharData(characterName))["vision"];
-
         return {
           name: capitalizedCharacterName,
-          vision: elementClass.getElement(visionName),
+          vision: elementClass.getElement((<string>visionName).toLowerCase()),
           roles: <[CharacterBuild]> editedRoles,
         };
       }),
@@ -137,5 +136,7 @@ class CharactersBuilds {
 }
 
 const characterBuilds = new CharactersBuilds();
+
+characterBuilds.GetAllCharacters().then(_=>console.log(characterBuilds.getCharacterData("Sucrose")))
 
 export { characterBuilds };

@@ -10,6 +10,7 @@ import {
   CharacterBuild,
   characterBuilds,
 } from "../data/characters.ts";
+import { weaponClass } from "../data/weapons.ts";
 import { deserialize, serialize } from "../utils/stringRelated.ts";
 
 function createBuildActionRows(character: string) {
@@ -50,17 +51,17 @@ function createCharacterEmbed(interaction: Interaction, characterName: string) {
     embeds: [{
       thumbnail: {
         url:
-          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/${character}.png`,
+          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/${characterName}.png`,
       },
       color: character.vision.color,
       title: `${characterDeserial}'s builds`,
       description: `Select the build you're interested in !`,
       footer: {
-        text: `Data from : https://paimon.moe/characters/${character}`,
+        text: `Data from : https://paimon.moe/characters/${characterName}`,
       },
     }],
     components: createBuildActionRows(characterDeserial),
-  });
+  }).catch((x) => console.log(x));
 }
 
 function createMenuComponents(character: Character, build: CharacterBuild) {
@@ -130,7 +131,10 @@ function homeEmbed(
         {
           name: "Best Weapon",
           value: build.weapons.length
-            ? deserialize(build.weapons[0].id)
+            ? (() => {
+              const weapon = weaponClass.getWeapon(build.weapons[0].id);
+              return `${weapon.name} ${weapon.rarity}⭐`;
+            })()
             : "TBD",
           inline: true,
         },
@@ -139,9 +143,10 @@ function homeEmbed(
           name: "Best Artifacts",
           value: build.artifacts.length
             ? ((build.artifacts[0].length > 2 ? "Choose 2 : " : "") +
-            (build.artifacts[0].map((y) => deserialize(y) + ((<string[]>build.artifacts[0]).length - 1 ? " (2)" : " (4)")).join
-              (build.artifacts[0].length > 2 ? " or " : " & ")
-            ))
+              (build.artifacts[0].map((y) =>
+                deserialize(y) +
+                ((<string[]> build.artifacts[0]).length - 1 ? " (2)" : " (4)")
+              ).join(build.artifacts[0].length > 2 ? " or " : " & ")))
             : "TBD",
         },
         { name: "Circlet", value: build.mainStats.circlet, inline: true },
@@ -186,15 +191,19 @@ function artifactsEmbed(
       fields: [
         {
           name: "Artifacts",
-          value: build.artifacts.map((x,i) => `**${i+1}. **` + (x.length > 2 ? "Choose 2 : " : "") +
-            x.map((y) => deserialize(y) + (x.length - 1 ? " (2)" : " (4)")).join(
-              (x.length > 2 ? " / " : " & "),
-            )
+          value: build.artifacts.map((x, i) =>
+            `**${i + 1}. **` + (x.length > 2 ? "Choose 2 : " : "") +
+            x.map((y) => deserialize(y) + (x.length - 1 ? " (2)" : " (4)"))
+              .join(
+                x.length > 2 ? " / " : " & ",
+              )
           ).join("\n"),
         },
         {
           name: "Sub Stats",
-          value: `${build.subStats.map((x,i) => `**${i+1}. ** ${x}` ).join("\n")}`,
+          value: `${
+            build.subStats.map((x, i) => `**${i + 1}. ** ${x}`).join("\n")
+          }`,
         },
         { name: "Circlet", value: build.mainStats.circlet, inline: true },
         { name: "Goblet", value: build.mainStats.goblet, inline: true },
@@ -238,7 +247,12 @@ function weaponsEmbed(
       fields: [
         {
           name: "Weapons",
-          value: build.weapons.map((x,i) => `**${i+1}. **` + deserialize(x.id)).join("\n"),
+          value: build.weapons.map((x, i) =>
+            `**${i + 1}. **` + (() => {
+              const weapon = weaponClass.getWeapon(x.id);
+              return `${weapon.name} ${weapon.rarity}⭐`;
+            })()
+          ).join("\n"),
         },
       ],
       footer: {
@@ -266,7 +280,6 @@ function noteEmbed(
   const fields: [EmbedField] = [<EmbedField> {}];
   fields.pop();
 
-  
   if (build.note.length != 0) {
     const notes = build.note.split("\n");
     notes.map((x, i) => {
@@ -279,9 +292,9 @@ function noteEmbed(
     });
   } else {
     fields.push({
-      name : "Note",
-      value: "No notes yet"
-    })
+      name: "Note",
+      value: "No notes yet",
+    });
   }
 
   fields.push({

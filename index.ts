@@ -31,6 +31,10 @@ import { handleInterract } from "./modules/interactions.ts";
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
 import { characterBuilds } from "./modules/data/characters.ts";
+import { elementClass } from "./modules/data/elements.ts"
+import { itemClass } from "./modules/data/items.ts"
+import { weaponClass } from "./modules/data/weapons.ts"
+
 
 export class DrunkVenti extends Client {
   // Bot startup function
@@ -46,9 +50,15 @@ export class DrunkVenti extends Client {
     // Data
     dailyEvents.getEventsData();
     characterBuilds.GetAllCharacters();
+    weaponClass.initWeapons();
+    itemClass.initItems();
+    elementClass.initElements();
     cron("0 0/1 * * *", () => {
       dailyEvents.getEventsData();
       characterBuilds.GetAllCharacters();
+      weaponClass.initWeapons();
+      itemClass.initItems();
+      elementClass.initElements();
     });
 
     // Embed Messages Infos
