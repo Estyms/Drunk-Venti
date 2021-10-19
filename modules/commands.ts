@@ -15,6 +15,21 @@ import { webHookManager } from "./utils/webhookManager.ts";
 import { characterBuilds } from "./builds/characters.ts";
 import { serialize } from "./utils/stringRelated.ts";
 
+function ERROR_MESSAGE(interaction: Interaction, msg: string) {
+  interaction.respond({
+    embeds: [
+      new Embed({
+        title: "Error",
+        description: msg,
+        color: 0xFF0000,
+        footer: { text: interaction.client.user?.username || "Drunk Venti" },
+      }),
+    ],
+    flags: InteractionResponseFlags.EPHEMERAL,
+  });
+  return;
+}
+
 // Every command descriptions
 export const commands: SlashCommandPartial[] = [
   {
@@ -91,34 +106,17 @@ export async function createStatusMessage(interaction: Interaction) {
   const channel = options.options.find((e) => e.name == "channel");
 
   if (!channel) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: "Channel not provided",
-          color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, "Channel not provided");
     return;
   }
 
   await webHookManager.createChannelWebhook(<string> channel.value);
 
   if (server["news_channel"] == String(channel.value)) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Create Status Message",
-          description: `<#${channel.value}> is already the News Channel.`,
-          color: 0xffff00,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(
+      interaction,
+      `<#${channel.value}> is already the News Channel.`,
+    );
     return;
   }
 
@@ -140,18 +138,7 @@ export async function createStatusMessage(interaction: Interaction) {
   const client = await interaction.guild?.me();
 
   if (!client) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: `Critical bug guild.me doesn't exists`,
-          color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
-    return;
+    ERROR_MESSAGE(interaction, `Critical bug guild.me doesn't exists`);
   }
 
   const resolvedChannels = options.resolved?.channels;
@@ -165,32 +152,16 @@ export async function createStatusMessage(interaction: Interaction) {
   );
 
   if (!messageData.success) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: `Critical bug messageData.success isn't true`,
-          color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, `Critical bug messageData.success isn't true`);
     return;
   }
 
   if (!messageData.message) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: `Critical bug messageData.message doesn't exists`,
-          color: 0xFF0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(
+      interaction,
+      `Critical bug messageData.message doesn't exists`,
+    );
+
     return;
   }
 
@@ -257,7 +228,7 @@ export async function getCharacterBuilds(interaction: Interaction) {
               "Too many character found, please try a more accurate name.",
           },
         ],
-        ephemeral: true
+        ephemeral: true,
       },
     );
     return;
@@ -344,33 +315,12 @@ export async function addTwitterAccount(interaction: Interaction) {
   );
 
   if (!twitterAccount) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: "Twitter account not provided.",
-          color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, "Twitter account not provided.");
     return;
   }
 
   if (!twitterAccount.match(/^[a-zA-Z0-9_]{0,15}$/)) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description:
-            `${twitterAccount} doesn't match the format of a twitter account.`,
-          color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, `${twitterAccount} doesn't match the format of a twitter account.`)
     return;
   }
 
@@ -485,51 +435,18 @@ export function removeTwitterAccount(interaction: Interaction) {
   );
 
   if (!twitterAccount) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description: "Twitter account not provided.",
-          color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, "Twitter account not provided.");
     return;
   }
 
   if (!twitterAccount.match(/^[a-zA-Z0-9_]{0,15}$/)) {
-    interaction.respond({
-      embeds: [
-        new Embed({
-          title: "Error",
-          description:
-            `${twitterAccount} doesn't match the format of a twitter account.`,
-          color: 0xff0000,
-          footer: { text: interaction.client.user?.username || "Drunk Venti" },
-        }),
-      ],
-      flags: InteractionResponseFlags.EPHEMERAL,
-    });
+    ERROR_MESSAGE(interaction, `${twitterAccount} doesn't match the format of a twitter account.`);
     return;
   }
 
   Twitter.getUserId(twitterAccount).then(async (json) => {
     if (!json || !json["data"]) {
-      interaction.respond({
-        embeds: [
-          new Embed({
-            title: "Error",
-            description: `${twitterAccount} accounts doesn't exist.`,
-            color: 0xff0000,
-            footer: {
-              text: interaction.client.user?.username || "Drunk Venti",
-            },
-          }),
-        ],
-        flags: InteractionResponseFlags.EPHEMERAL,
-      });
+      ERROR_MESSAGE(interaction,`${twitterAccount} accounts doesn't exist.`)
       return;
     }
 
