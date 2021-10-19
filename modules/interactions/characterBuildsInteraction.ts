@@ -41,9 +41,9 @@ function createBuildActionRows(character: string) {
   return components;
 }
 
-function createCharacterEmbed(interaction: Interaction, character: string) {
-  const characterDeserial = characterBuilds.getNameFromId(character);
-  const charData = characterBuilds.getCharacterData(characterDeserial);
+function createCharacterEmbed(interaction: Interaction, characterName: string) {
+  const characterDeserial = characterBuilds.getNameFromId(characterName);
+  const character = characterBuilds.getCharacterData(characterDeserial);
 
   interaction.respond({
     type: 7,
@@ -52,7 +52,7 @@ function createCharacterEmbed(interaction: Interaction, character: string) {
         url:
           `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/${character}.png`,
       },
-      color: charData.vision.getColor(),
+      color: character.vision.color,
       title: `${characterDeserial}'s builds`,
       description: `Select the build you're interested in !`,
       footer: {
@@ -118,7 +118,7 @@ function homeEmbed(
   interaction.respond({
     type: 7,
     embeds: [{
-      color: character.vision.getColor(),
+      color: character.vision.color,
       title: `${deserialize(args[2])} - ${build.type}`,
       thumbnail: {
         url:
@@ -175,7 +175,7 @@ function artifactsEmbed(
   interaction.respond({
     type: 7,
     embeds: [{
-      color: character.vision.getColor(),
+      color: character.vision.color,
       title: `${deserialize(args[2])} - ${build.type}`,
       thumbnail: {
         url:
@@ -227,7 +227,7 @@ function weaponsEmbed(
   interaction.respond({
     type: 7,
     embeds: [{
-      color: character.vision.getColor(),
+      color: character.vision.color,
       title: `${deserialize(args[2])} - ${build.type}`,
       thumbnail: {
         url:
@@ -292,7 +292,7 @@ function noteEmbed(
   interaction.respond({
     type: 7,
     embeds: [{
-      color: character.vision.getColor(),
+      color: character.vision.color,
       title: `${deserialize(args[2])} - ${build.type}`,
       thumbnail: {
         url:
