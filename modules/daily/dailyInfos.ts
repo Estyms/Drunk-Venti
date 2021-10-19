@@ -1,7 +1,7 @@
 import { Server } from "../mongodb.ts";
-import { Embed } from "../../deps.ts";
-import { DrunkVenti } from "../../index.ts"
-import { getGenshinDayName, GenshinServer } from "../utils/timeRelated.ts";
+import { Embed, Message } from "../../deps.ts";
+import { DrunkVenti } from "../../index.ts";
+import { GenshinServer, getGenshinDayName } from "../utils/timeRelated.ts";
 import { dailyEvents } from "./dailyEvents.ts";
 import { webHookManager } from "../utils/webhookManager.ts";
 
@@ -16,7 +16,9 @@ async function createDailyEmbedMessages(): Promise<Embed[]> {
       title: "Todays Farmable Objects",
       image: {
         url:
-          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${getGenshinDayName(GenshinServer.Europe)}.png`,
+          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/daily/${
+            getGenshinDayName(GenshinServer.Europe)
+          }.png`,
       },
       color: 0x0099E1,
     })
@@ -49,17 +51,24 @@ async function updateDailyInfos(client: DrunkVenti) {
   dailyMessageIdList.filter((server) =>
     server["daily_message_id"] && server["daily_message_channel"]
   ).forEach(
-    (async (server) => {
-      if (await client.guilds.get(<string>server["guild_id"]) == undefined) {
+    async (server) => {
+      if (await client.guilds.get(<string> server["guild_id"]) == undefined) {
         return;
       }
 
       if (server["daily_message_channel"] && server["daily_message_id"]) {
-
-        const message = await webHookManager.getWebhookMessage(
-          <string>server["daily_message_channel"],
-          <string>server["daily_message_id"],
-        ).catch((e) => console.error(e));
+        let message: Message | void | undefined;
+        try {
+          message = await webHookManager.getWebhookMessage(
+            <string> server["daily_message_channel"],
+            <string> server["daily_message_id"],
+          );
+        } catch (_) {
+          Server.where({daily_message_channel:<string>server["daily_message_channel"]})
+            .update({daily_message_channel:"", daily_message_id:""}).then(_=>{
+              console.log("Daily Message Deleted");
+            });
+        }
 
         if (!message) return;
 
@@ -69,7 +78,7 @@ async function updateDailyInfos(client: DrunkVenti) {
           messages,
         ).catch((e) => console.error(e));
       }
-    }),
+    },
   );
 }
 

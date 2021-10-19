@@ -142,6 +142,8 @@ class WebHookManagerClass {
           <UserPayload> (<WebhookPayload> webhookPayload)?.user,
         ),
       );
+    } else {
+      throw new Error();
     }
   }
 }
