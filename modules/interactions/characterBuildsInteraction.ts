@@ -9,7 +9,7 @@ import {
   Character,
   CharacterBuild,
   characterBuilds,
-} from "../builds/characters.ts";
+} from "../data/characters.ts";
 import { deserialize, serialize } from "../utils/stringRelated.ts";
 
 function createBuildActionRows(character: string) {

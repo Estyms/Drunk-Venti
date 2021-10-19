@@ -12,7 +12,7 @@ import {
   SlashCommandPartial,
 } from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
-import { characterBuilds } from "./builds/characters.ts";
+import { characterBuilds } from "./data/characters.ts";
 import { serialize } from "./utils/stringRelated.ts";
 
 function ERROR_MESSAGE(interaction: Interaction, msg: string) {

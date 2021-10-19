@@ -30,7 +30,7 @@ import { handleInterract } from "./modules/interactions.ts";
 
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
-import { characterBuilds } from "./modules/builds/characters.ts";
+import { characterBuilds } from "./modules/data/characters.ts";
 
 export class DrunkVenti extends Client {
   // Bot startup function
