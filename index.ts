@@ -42,12 +42,10 @@ export class DrunkVenti extends Client {
   // Bot startup function
   start() {
     // Tweets
-    /*
     this.checkTweets();
     cron("0/15 * * * *", () => {
       this.checkTweets();
     });
-    */
 
     // Data
     domainsClass.initDomains()
