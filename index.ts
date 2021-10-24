@@ -119,14 +119,25 @@ export class DrunkVenti extends Client {
     await exec();
   }
 
+  async deleteGuildCommands() {
+    const allGuilds = await this.guilds.array()
+    await Promise.all(allGuilds.map(async (g) => {
+      const contents = await this.interactions.commands.guild(g);
+      await Promise.all(contents.map(x=>x.delete()));
+    }));
+  }
+
   async initCommands() {
     await this.deleteGlobalCommands();
+    if (parse(Deno.args) && !parse(Deno.args)["deleteGuildCommands"]){
+      await this.deleteGuildCommands();
+    }
     for (let i = 0; i < commands.length; i++) {
       try {
         if (
           !(await this.interactions.commands.all()).find((x) =>
             x.name == commands[i].name
-          )
+          ) 
         ) {
           await this.interactions.commands.create(commands[i]);
           console.log(`Created ${commands[i].name}`);
