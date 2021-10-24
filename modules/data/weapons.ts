@@ -1,5 +1,6 @@
 import { AsyncFunction } from "../../deps.ts";
 import { itemClass, ItemType } from "./items.ts";
+import { editDist } from "../utils/stringRelated.ts"
 
 const weapons = {
   sword: {
@@ -24,19 +25,20 @@ const weapons = {
   },
 };
 
-interface WeaponType{
-    id: string;
-    name: string;
-    rarity: number;
-    atk: number;
-    secondary: string;
-    type: { id: string; name: string };
-    source: string;
-    ascension: { items: { item: ItemType; amount: number }[], mora: number }[];
+interface WeaponType {
+  id: string;
+  name: string;
+  rarity: number;
+  atk: number;
+  secondary: string;
+  type: { id: string; name: string };
+  source: string;
+  ascension: { items: { item: ItemType; amount: number }[], mora: number }[];
+  extras: {description: string, skill: {name: string, description: string} | Record <string, never>}
 }
 
 interface WeaponsType {
-  [id: string]: WeaponType 
+  [id: string]: WeaponType
 }
 
 class WeaponClass {
@@ -46,6 +48,8 @@ class WeaponClass {
 
     if (itemClass.getItems() === {}) await itemClass.initItems();
 
+    const data : {[id: string]:{description: string, skill: {name: string, description: string} | Record <string, never>}} = JSON.parse(await (await fetch("https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/weapons/en.json")).text());
+
     let func = (await (await fetch(
       "https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/weaponList.js",
     )).text());
@@ -53,6 +57,10 @@ class WeaponClass {
     this.weaponList = await new AsyncFunction("weapons", "itemList",
       func.replace("export const weaponList = ", "return"),
     )(weapons, itemClass.getItems());
+
+    Object.values(this.weaponList).forEach(x=>{
+      this.weaponList[x.id].extras = data[x.id];
+    })
   }
 
   getWeapons() {
@@ -61,9 +69,30 @@ class WeaponClass {
   getWeapon(id: string) {
     return this.weaponList[id];
   }
+
+  getNearestWeaponsName(input: string) {
+    const nameMap = Object.values(this.weaponList).map(
+      (x) => {
+        return {
+          weapon: x,
+          name: x.name,
+          dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
+            ? 0
+            : editDist(input, x.name, input.length, x.name.length),
+        };
+      },
+    );
+    const differenceMap = nameMap?.sort((a, b) => a.dist - b.dist);
+
+    const nearests = differenceMap?.filter((x) =>
+      x.dist === differenceMap[0].dist
+    );
+
+    return <[WeaponType]>nearests?.map((x) => x.weapon).sort();
+  }
 }
 
 const weaponClass = new WeaponClass();
 
-export {weaponClass};
-export type {WeaponType, WeaponsType}
+export { weaponClass };
+export type { WeaponType, WeaponsType }

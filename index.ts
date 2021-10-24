@@ -1,7 +1,7 @@
 import "./deps.ts";
 import { Twitter } from "./modules/twitter.ts";
 import { Server, Tweet } from "./modules/mongodb.ts";
-import { cron } from "./deps.ts";
+import { cron, parse } from "./deps.ts";
 import {
   Client,
   ClientActivity,
@@ -21,9 +21,9 @@ import {
   addTwitterAccount,
   commands,
   createStatusMessage,
-  getCharacterBuilds,
   removeTwitterAccount,
   setNewsChannel,
+  genshin
 } from "./modules/commands.ts";
 
 import { handleInterract } from "./modules/interactions.ts";
@@ -34,6 +34,8 @@ import { characterBuilds } from "./modules/data/characters.ts";
 import { elementClass } from "./modules/data/elements.ts"
 import { itemClass } from "./modules/data/items.ts"
 import { weaponClass } from "./modules/data/weapons.ts"
+import { artifactsClass } from "./modules/data/artifacts.ts"
+import { domainsClass } from "./modules/data/domains.ts"
 
 
 export class DrunkVenti extends Client {
@@ -48,17 +50,21 @@ export class DrunkVenti extends Client {
     */
 
     // Data
+    domainsClass.initDomains()
     dailyEvents.getEventsData();
     characterBuilds.GetAllCharacters();
     weaponClass.initWeapons();
     itemClass.initItems();
     elementClass.initElements();
+    artifactsClass.initArtifacts();
     cron("0 0/1 * * *", () => {
+      domainsClass.initDomains()
       dailyEvents.getEventsData();
       characterBuilds.GetAllCharacters();
       weaponClass.initWeapons();
       itemClass.initItems();
       elementClass.initElements();
+      artifactsClass.initArtifacts();
     });
 
     // Embed Messages Infos
@@ -92,11 +98,16 @@ export class DrunkVenti extends Client {
   }
 
   async deleteGlobalCommands() {
-    const globalCommands = await (await this.interactions.commands.all()).map(
+    let globalCommands = await (await this.interactions.commands.all()).map(
       (x) => {
         return { id: x.id, name: x.name };
       },
-    ).filter((x) => !commands.find((y) => y.name != x.name));
+    )
+
+    if (parse(Deno.args) && !parse(Deno.args)["resetCommands"]){
+      globalCommands = globalCommands.filter(x=>!commands.map(y=>y.name).includes(x.name))
+    }
+
     const exec = () =>
       this.asyncForEach(
         globalCommands,
@@ -344,9 +355,9 @@ export class DrunkVenti extends Client {
     createStatusMessage(interaction);
   }
 
-  @slash("characterbuilds")
-  CB(interaction: Interaction) {
-    getCharacterBuilds(interaction);
+  @slash("genshin")
+  G(interaction: Interaction) {
+    genshin(interaction)
   }
 
   @event("interactionCreate")
@@ -355,6 +366,7 @@ export class DrunkVenti extends Client {
       handleInterract(interaction);
     }
   }
+
 
   @slash("addtwitteraccount")
   ATA(interaction: Interaction) {
@@ -401,6 +413,7 @@ export class DrunkVenti extends Client {
     setNewsChannel(interaction);
   }
 }
+
 
 const client = new DrunkVenti();
 

@@ -92,10 +92,11 @@ class CharactersBuilds {
     this.characterState = true;
   }
 
-  getNearestCharacter(input: string): [string] {
+  getNearestCharacter(input: string): [{id:string, name: string}] {
     const nameMap = this.characters?.map(
       (x) => {
         return {
+          character: x,
           name: x.name,
           dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
             ? 0
@@ -109,7 +110,7 @@ class CharactersBuilds {
       x.dist === differenceMap[0].dist
     );
 
-    return <[string]> nearests?.map((x) => x.name).sort();
+    return <[{id:string, name: string}]> nearests?.map((x) => {return {id: x.character.name, name: deserialize(x.character.name)}}).sort();
   }
 
   getChars = () => {
@@ -136,7 +137,5 @@ class CharactersBuilds {
 }
 
 const characterBuilds = new CharactersBuilds();
-
-characterBuilds.GetAllCharacters().then(_=>console.log(characterBuilds.getCharacterData("Sucrose")))
 
 export { characterBuilds };
