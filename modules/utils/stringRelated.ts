@@ -1,13 +1,13 @@
-function serialize(str: string){
+export function serialize(str: string){
     return str.toLowerCase().replace(" ", "_");
 }
 
-function deserialize(str: string){
+export function deserialize(str: string){
     return str.split("_").map(x=>x.charAt(0).toUpperCase() + x.substr(1)).join(" ");
 }
 
 // https://www.geeksforgeeks.org/edit-distance-dp-5/
-function editDist(str1 :string , str2 : string, m : number, n : number) : number
+export function editDist(str1 :string , str2 : string, m : number, n : number) : number
 {
      
     // If first string is empty, the
@@ -40,5 +40,6 @@ function editDist(str1 :string , str2 : string, m : number, n : number) : number
         editDist(str1, str2, m - 1, n - 1)); // Replace
 }
 
-
-export {editDist, deserialize, serialize};
+export function capitalize(str: string){
+    return `${str.charAt(0).toUpperCase()}${str.substr(1)}`
+}

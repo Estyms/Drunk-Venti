@@ -1,5 +1,6 @@
 import { deserialize, editDist } from "../utils/stringRelated.ts";
 import { AsyncFunction } from "../../deps.ts";
+import { elementClass, ElementType} from './elements.ts'
 
 export interface CharacterBuild {
   type: string;
@@ -13,40 +14,9 @@ export interface CharacterBuild {
   note: string;
 }
 
-class Vision {
-  static readonly ANEMO = new Vision("Anemo", 0x7fffd4);
-  static readonly CRYO = new Vision("Cryo", 0xd6fffa);
-  static readonly DENDRO = new Vision("Dendro", 0x7de91c);
-  static readonly ELECTRO = new Vision("Electro", 0xbf00ff);
-  static readonly GEO = new Vision("Geo", 0xffbf00);
-  static readonly HYDRO = new Vision("Hydro", 0x0f5e9c);
-  static readonly PYRO = new Vision("Pyro", 0xe25822);
-
-  static visions: Vision[] = [
-    this.ANEMO,
-    this.CRYO,
-    this.DENDRO,
-    this.ELECTRO,
-    this.GEO,
-    this.HYDRO,
-    this.PYRO,
-  ];
-
-  constructor(private readonly name: string, private readonly color: number) {
-  }
-
-  getColor = () => {
-    return this.color;
-  };
-
-  static getVision(visionName: string) {
-    return this.visions.find((x) => x.name === visionName);
-  }
-}
-
 export interface Character {
   name: string;
-  vision: Vision;
+  vision: ElementType;
   roles: [CharacterBuild];
 }
 
@@ -78,6 +48,9 @@ class CharactersBuilds {
   }
 
   async GetAllCharacters(): Promise<void> {
+
+    if(Object.keys(elementClass.getElements()).length === 0) await elementClass.initElements();
+
     this.characterState = false;
     interface RolesJSO {
       [index: string]: { roles: Record<string, unknown> };
@@ -107,10 +80,9 @@ class CharactersBuilds {
         const capitalizedCharacterName = deserialize(characterName);
 
         const visionName = (await this.fetchCharData(characterName))["vision"];
-
         return {
           name: capitalizedCharacterName,
-          vision: <Vision> Vision.getVision(visionName),
+          vision: elementClass.getElement((<string>visionName).toLowerCase()),
           roles: <[CharacterBuild]> editedRoles,
         };
       }),
@@ -120,10 +92,11 @@ class CharactersBuilds {
     this.characterState = true;
   }
 
-  getNearestCharacter(input: string): [string] {
+  getNearestCharacter(input: string): [{id:string, name: string}] {
     const nameMap = this.characters?.map(
       (x) => {
         return {
+          character: x,
           name: x.name,
           dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
             ? 0
@@ -137,7 +110,7 @@ class CharactersBuilds {
       x.dist === differenceMap[0].dist
     );
 
-    return <[string]> nearests?.map((x) => x.name).sort();
+    return <[{id:string, name: string}]> nearests?.map((x) => {return {id: x.character.name, name: deserialize(x.character.name)}}).sort();
   }
 
   getChars = () => {
@@ -165,4 +138,4 @@ class CharactersBuilds {
 
 const characterBuilds = new CharactersBuilds();
 
-export { characterBuilds, Vision };
+export { characterBuilds };
