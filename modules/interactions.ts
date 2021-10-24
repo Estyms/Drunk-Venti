@@ -1,11 +1,21 @@
-import { Interaction } from "../deps.ts";
+import { Interaction, InteractionMessageComponentData } from "../deps.ts";
 import { characterBuildsInteract } from "./interactions/characterBuildsInteraction.ts";
+import { weaponsInteract } from "./interactions/weaponsInteraction.ts";
+import { artifactInterract } from "./interactions/artifactsInteraction.ts";
 
 function handleInterract(interaction: Interaction) {
-  switch (interaction.message?.interaction?.name) {
-    case "characterbuilds":
+  const id = (<InteractionMessageComponentData>interaction.data).custom_id.split(".")[0]
+  console.log((<InteractionMessageComponentData>interaction.data).custom_id)
+  switch (id) {
+    case "charbuild":
       characterBuildsInteract(interaction);
       return;
+    case "weapon":
+      weaponsInteract(interaction)
+      return;
+    case "artifact":
+      artifactInterract(interaction);
+      return
     default:
       break;
   }
