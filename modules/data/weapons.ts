@@ -1,6 +1,6 @@
 import { AsyncFunction } from "../../deps.ts";
 import { itemClass, ItemType } from "./items.ts";
-import { editDist } from "../utils/stringRelated.ts"
+import { levenstein } from "../utils/stringRelated.ts"
 
 export const weapons = {
   sword: {
@@ -78,7 +78,7 @@ class WeaponClass {
           name: x.name,
           dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
             ? 0
-            : editDist(input, x.name, input.length, x.name.length),
+            : levenstein(input, x.name),
         };
       },
     );

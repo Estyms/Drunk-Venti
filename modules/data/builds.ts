@@ -1,4 +1,4 @@
-import { deserialize, editDist, serialize } from "../utils/stringRelated.ts";
+import { deserialize, levenstein, serialize } from "../utils/stringRelated.ts";
 import { AsyncFunction } from "../../deps.ts";
 import { elementClass, ElementType } from "./elements.ts";
 import { characterClass } from "./characters.ts";
@@ -76,15 +76,20 @@ class CharactersBuilds {
   getNearestCharacter(input: string): [{ id: string; name: string }] {
     const nameMap = this.characters?.map(
       (x) => {
-        return {
+        const y = {
           character: x,
           name: x.name,
           dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
             ? 0
-            : editDist(input, x.name, input.length, x.name.length),
+            : levenstein(input, x.name),
         };
+        console.log(y);
+        return y;
       },
     );
+
+      
+
     const differenceMap = nameMap?.sort((a, b) => a.dist - b.dist);
 
     const nearests = differenceMap?.filter((x) =>

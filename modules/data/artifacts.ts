@@ -1,4 +1,4 @@
-import { editDist } from "../utils/stringRelated.ts"
+import { levenstein } from "../utils/stringRelated.ts"
 
 interface ArtifactsType {
     [id: string]: ArtifactType
@@ -38,7 +38,7 @@ class ArtifactsData {
               name: x.name,
               dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
                 ? 0
-                : editDist(input, x.name, input.length, x.name.length),
+                : levenstein(input, x.name),
             };
           },
         );

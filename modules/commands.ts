@@ -268,7 +268,11 @@ export async function getCharacterBuilds(interaction: Interaction, options: Inte
   const name = <string>options.options.find((n) => n.name === "character")
     ?.value;
 
+  console.log(name)
+
   const characterList = characterBuilds.getNearestCharacter(name);
+
+  console.log(name)
 
   if (!characterList) {
     ERROR_MESSAGE(interaction, "No character found.");
