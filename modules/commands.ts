@@ -13,10 +13,9 @@ import {
   InteractionApplicationCommandOption
 } from "../deps.ts";
 import { webHookManager } from "./utils/webhookManager.ts";
-import { characterBuilds } from "./data/characters.ts";
+import { characterBuilds } from "./data/builds.ts";
 import { weaponClass } from "./data/weapons.ts";
 import { artifactsClass } from "./data/artifacts.ts";
-import { serialize } from "./utils/stringRelated.ts";
 
 function ERROR_MESSAGE(interaction: Interaction, msg: string) {
   interaction.respond({
@@ -269,13 +268,12 @@ export async function getCharacterBuilds(interaction: Interaction, options: Inte
   const name = <string>options.options.find((n) => n.name === "character")
     ?.value;
 
+  const characterList = characterBuilds.getNearestCharacter(name);
 
-  let characterList = characterBuilds.getNearestCharacter(name);
-  characterList = characterList.map(x=>{x.name=serialize(x.name); return x})
   if (!characterList) {
     ERROR_MESSAGE(interaction, "No character found.");
     return;
-  }
+  } 
 
   if (characterList.length > 25) {
     ERROR_MESSAGE(interaction, "Too many characters found.");

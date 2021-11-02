@@ -5,7 +5,7 @@ interface DomainType {
     name: string,
     id: string,
     ar: number,
-    level: 34,
+    level: number,
     reward: { adventureExp: number, mora: number, friendshipExp: number },
     monsters: [],
     disorder: [string]

@@ -1,8 +1,8 @@
 import { AsyncFunction } from "../../deps.ts";
 import { itemClass, ItemType } from "./items.ts";
-import { editDist } from "../utils/stringRelated.ts"
+import { levenstein } from "../utils/stringRelated.ts"
 
-const weapons = {
+export const weapons = {
   sword: {
     id: "sword",
     name: "Sword",
@@ -46,7 +46,7 @@ class WeaponClass {
 
   async initWeapons() {
 
-    if (itemClass.getItems() === {}) await itemClass.initItems();
+    if (Object.keys(itemClass.getItems()).length === 0) await itemClass.initItems();
 
     const data : {[id: string]:{description: string, skill: {name: string, description: string} | Record <string, never>}} = JSON.parse(await (await fetch("https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/src/data/weapons/en.json")).text());
 
@@ -78,7 +78,7 @@ class WeaponClass {
           name: x.name,
           dist: x.name.toLowerCase().includes(input.toLowerCase()) == true
             ? 0
-            : editDist(input, x.name, input.length, x.name.length),
+            : levenstein(input, x.name),
         };
       },
     );
