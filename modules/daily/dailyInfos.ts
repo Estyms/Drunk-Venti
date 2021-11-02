@@ -65,9 +65,7 @@ async function updateDailyInfos(client: DrunkVenti) {
           );
         } catch (_) {
           Server.where({daily_message_channel:<string>server["daily_message_channel"]})
-            .update({daily_message_channel:"", daily_message_id:""}).then(_=>{
-              console.log("Daily Message Deleted");
-            });
+            .update({daily_message_channel:"", daily_message_id:""});
         }
 
         if (!message) return;
