@@ -30,7 +30,8 @@ import { handleInterract } from "./modules/interactions.ts";
 
 import { updateDailyInfos } from "./modules/daily/dailyInfos.ts";
 import { dailyEvents } from "./modules/daily/dailyEvents.ts";
-import { characterBuilds } from "./modules/data/characters.ts";
+import { characterBuilds } from "./modules/data/builds.ts";
+import { characterClass} from "./modules/data/characters.ts";
 import { elementClass } from "./modules/data/elements.ts"
 import { itemClass } from "./modules/data/items.ts"
 import { weaponClass } from "./modules/data/weapons.ts"
@@ -50,19 +51,21 @@ export class DrunkVenti extends Client {
     // Data
     domainsClass.initDomains()
     dailyEvents.getEventsData();
-    characterBuilds.GetAllCharacters();
+    characterBuilds.initBuilds();
     weaponClass.initWeapons();
     itemClass.initItems();
     elementClass.initElements();
     artifactsClass.initArtifacts();
+    characterClass.initCharacters();
     cron("0 0/1 * * *", () => {
       domainsClass.initDomains()
       dailyEvents.getEventsData();
-      characterBuilds.GetAllCharacters();
+      characterBuilds.initBuilds();
       weaponClass.initWeapons();
       itemClass.initItems();
       elementClass.initElements();
       artifactsClass.initArtifacts();
+      characterClass.initCharacters();
     });
 
     // Embed Messages Infos

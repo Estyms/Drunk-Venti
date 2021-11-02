@@ -6,10 +6,10 @@ import {
   MessageComponentData,
 } from "../../deps.ts";
 import {
-  Character,
+  CharacterBuilds,
   CharacterBuild,
   characterBuilds,
-} from "../data/characters.ts";
+} from "../data/builds.ts";
 import { weaponClass } from "../data/weapons.ts";
 import { artifactsClass } from "../data/artifacts.ts"
 import { deserialize, serialize } from "../utils/stringRelated.ts";
@@ -42,29 +42,29 @@ function createBuildActionRows(character: string) {
   return components;
 }
 
-function createCharacterEmbed(interaction: Interaction, characterName: string) {
-  const characterDeserial = characterBuilds.getNameFromId(characterName);
-  const character = characterBuilds.getCharacterData(characterDeserial);
+function createCharacterEmbed(interaction: Interaction, characterId: string) {
+  const characterName = characterBuilds.getNameFromId(characterId);
+  const character = characterBuilds.getBuildData(characterName);
 
   interaction.respond({
     type: 7,
     embeds: [{
       thumbnail: {
         url:
-          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/${characterName}.png`,
+          `https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/${characterId}.png`,
       },
       color: character.vision.color,
-      title: `${characterDeserial}'s builds`,
+      title: `${characterName}'s builds`,
       description: `Select the build you're interested in !`,
       footer: {
-        text: `Data from : https://paimon.moe/characters/${characterName}`,
+        text: `Data from : https://paimon.moe/characters/${characterId}`,
       },
     }],
-    components: createBuildActionRows(characterDeserial),
+    components: createBuildActionRows(characterName),
   }).catch((x) => console.log(x));
 }
 
-function createMenuComponents(character: Character, build: CharacterBuild) {
+function createMenuComponents(character: CharacterBuilds, build: CharacterBuild) {
   const components: MessageComponentBase = {
     type: 1,
     components: [],
@@ -107,7 +107,7 @@ function createMenuComponents(character: Character, build: CharacterBuild) {
 function homeEmbed(
   interaction: Interaction,
   args: string[],
-  character: Character,
+  character: CharacterBuilds,
   build: CharacterBuild,
 ) {
   const component = createMenuComponents(character, build);
@@ -167,7 +167,7 @@ function homeEmbed(
 function artifactsEmbed(
   interaction: Interaction,
   args: string[],
-  character: Character,
+  character: CharacterBuilds,
   build: CharacterBuild,
 ) {
   const component = createMenuComponents(character, build);
@@ -223,7 +223,7 @@ function artifactsEmbed(
 function weaponsEmbed(
   interaction: Interaction,
   args: string[],
-  character: Character,
+  character: CharacterBuilds,
   build: CharacterBuild,
 ) {
   const component = createMenuComponents(character, build);
@@ -267,7 +267,7 @@ function weaponsEmbed(
 function noteEmbed(
   interaction: Interaction,
   args: string[],
-  character: Character,
+  character: CharacterBuilds,
   build: CharacterBuild,
 ) {
   const component = createMenuComponents(character, build);
@@ -322,7 +322,7 @@ function noteEmbed(
 }
 
 function createBuildEmbed(interaction: Interaction, args: string[]) {
-  const character = characterBuilds.getCharacterData(
+  const character = characterBuilds.getBuildData(
     characterBuilds.getNameFromId(args[3]),
   );
   const build = characterBuilds.getCharacterBuilds(
