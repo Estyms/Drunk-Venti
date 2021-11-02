@@ -238,7 +238,7 @@ export function genshin(interaction: Interaction){
 /// CHARACTER BUILDS
 
 function createListComponents(
-  data: [{ id: string, name: string }], command: string,
+  data: { id: string, name: string }[], command: string,
 ): MessageComponentData[] {
   if (data.length > 25) return [];
 
@@ -269,22 +269,16 @@ export async function getCharacterBuilds(interaction: Interaction, options: Inte
   const name = <string>options.options.find((n) => n.name === "character")
     ?.value;
 
-  const characterList = characterBuilds.getNearestCharacter(name);
+
+  let characterList = characterBuilds.getNearestCharacter(name);
+  characterList = characterList.map(x=>{x.name=serialize(x.name); return x})
+  if (!characterList) {
+    ERROR_MESSAGE(interaction, "No character found.");
+    return;
+  }
 
   if (characterList.length > 25) {
-    await interaction.respond(
-      {
-        embeds: [
-          {
-            title: "An error has occured",
-            color: 0xff0000,
-            description:
-              "Too many character found, please try a more accurate name.",
-          },
-        ],
-        ephemeral: true,
-      },
-    );
+    ERROR_MESSAGE(interaction, "Too many characters found.");
     return;
   } else {
     await interaction.respond({

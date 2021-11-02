@@ -48,6 +48,6 @@ import {
 export { DataTypes, Model };
 export { cron, daily } from "https://deno.land/x/deno_cron@v1.0.0/cron.ts";
 export { fetchAuto } from "https://deno.land/x/fetchbase64@1.0.0/mod.ts";
-export { parse } from "https://deno.land/std@0.112.0/flags/mod.ts";
+export { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
 const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 export { AsyncFunction };

@@ -61,7 +61,7 @@ function createCharacterEmbed(interaction: Interaction, characterName: string) {
       },
     }],
     components: createBuildActionRows(characterDeserial),
-  }).catch((x) => console.log(x));
+  }).catch((x) => console.error(x));
 }
 
 function createMenuComponents(character: Character, build: CharacterBuild) {

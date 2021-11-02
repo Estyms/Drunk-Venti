@@ -92,7 +92,7 @@ class CharactersBuilds {
     this.characterState = true;
   }
 
-  getNearestCharacter(input: string): [{id:string, name: string}] {
+  getNearestCharacter(input: string): {id:string, name: string}[] {
     const nameMap = this.characters?.map(
       (x) => {
         return {
